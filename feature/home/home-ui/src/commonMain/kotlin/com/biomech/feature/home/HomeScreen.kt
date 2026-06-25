@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.biomech.domain.model.Device
@@ -30,6 +31,7 @@ fun HomeScreen(
     onDeviceClick: (Device) -> Unit,
     onEditDevice: ((Device) -> Unit)? = null,
     onDeleteDevice: ((Device) -> Unit)? = null,
+    onNavigateToTraining: ((Device) -> Unit)? = null,
 ) {
     Scaffold(
         topBar = {
@@ -134,7 +136,16 @@ fun HomeScreen(
                 DropdownMenu(
                     expanded = showMenu,
                     onDismissRequest = { showMenu = false },
+                    offset = DpOffset(8.dp, 0.dp),
                 ) {
+                    DropdownMenuItem(
+                        text = { Text("Training") },
+                        onClick = {
+                            showMenu = false
+                            onNavigateToTraining?.invoke(device)
+                        },
+                    )
+                    HorizontalDivider()
                     DropdownMenuItem(
                         text = { Text("Edit") },
                         onClick = {
