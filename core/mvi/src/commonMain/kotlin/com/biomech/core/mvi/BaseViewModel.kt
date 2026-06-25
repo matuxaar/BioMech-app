@@ -19,7 +19,7 @@ abstract class BaseViewModel<S : BaseState, A : BaseAction, E : BaseEvent> {
     val state: StateFlow<S> by lazy { _state.asStateFlow() }
 
     protected abstract val _event: Channel<E>
-    val event = _event.receiveAsFlow()
+    val event by lazy { _event.receiveAsFlow() }
 
     protected abstract suspend fun handleAction(action: A)
 

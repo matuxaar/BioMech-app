@@ -21,7 +21,6 @@ import com.biomech.feature.training.TrainingViewModel
 import io.ktor.client.*
 import io.ktor.client.plugins.*
 import io.ktor.client.request.*
-import io.ktor.client.statement.*
 import kotlinx.coroutines.withTimeout
 import org.koin.compose.koinInject
 
@@ -37,7 +36,7 @@ private val healthClient by lazy {
 private suspend fun isApiAvailable(): Boolean {
     return try {
         withTimeout(4_000) {
-            val response = healthClient.get(ApiConfig.baseUrl)
+            healthClient.get(ApiConfig.baseUrl)
             true
         }
     } catch (_: Exception) {
