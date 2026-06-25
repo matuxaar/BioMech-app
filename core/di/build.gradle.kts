@@ -24,7 +24,6 @@ kotlin {
             implementation(project(":core:network"))
             implementation(project(":core:ble"))
             implementation(project(":core:storage"))
-            implementation(project(":core:database"))
             implementation(libs.room.runtime)
             implementation(project(":domain"))
             implementation(project(":feature:auth:auth-domain"))
@@ -46,6 +45,7 @@ kotlin {
         }
         androidMain.dependencies {
             implementation("io.insert-koin:koin-android:4.2.1")
+            implementation(project(":core:database"))
         }
     }
 }

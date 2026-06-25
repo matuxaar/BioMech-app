@@ -32,9 +32,9 @@ val sharedModule = module {
     single { TrainingApi() }
 
     single<AuthRepository> { AuthRepositoryImpl(get(), get()) }
-    single<DeviceRepository> { DeviceRepositoryImpl(get(), get()) }
-    single<EMGRepository> { EMGRepositoryImpl(get(), get()) }
-    single<TrainingRepository> { TrainingRepositoryImpl(get(), get()) }
+    single<DeviceRepository> { DeviceRepositoryImpl(get()) }
+    single<EMGRepository> { EMGRepositoryImpl(get()) }
+    single<TrainingRepository> { TrainingRepositoryImpl(get()) }
 
     single<LoginUseCase> { LoginUseCase(get()) }
     single<StartEMGSessionUseCase> { StartEMGSessionUseCase(get()) }

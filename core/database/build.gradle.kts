@@ -10,11 +10,7 @@ kotlin {
         compileSdk = 36
         minSdk = 26
     }
-    iosArm64()
-    iosSimulatorArm64()
-    compilerOptions {
-        freeCompilerArgs.add("-Xexpect-actual-classes")
-    }
+
     sourceSets {
         commonMain.dependencies {
             implementation(project(":core:common"))
@@ -26,14 +22,9 @@ kotlin {
             implementation(libs.room.runtime)
             implementation(libs.room.ktx)
         }
-        iosMain.dependencies {
-            implementation(libs.room.runtime)
-        }
     }
 }
 
 dependencies {
     add("kspAndroid", libs.room.compiler)
-    add("kspIosArm64", libs.room.compiler)
-    add("kspIosSimulatorArm64", libs.room.compiler)
 }

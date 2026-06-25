@@ -1,5 +1,6 @@
 package com.biomech.core.ble
 
+import com.biomech.domain.model.EMGSample
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 

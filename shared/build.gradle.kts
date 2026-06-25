@@ -50,7 +50,6 @@ kotlin {
             implementation(project(":core:crash"))
             implementation(project(":core:network"))
             implementation(project(":core:ble"))
-            implementation(project(":core:database"))
             implementation(project(":domain"))
             implementation(project(":feature:auth:auth-domain"))
             implementation(project(":feature:auth:auth-data"))

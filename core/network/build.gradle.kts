@@ -17,7 +17,6 @@ kotlin {
         commonMain.dependencies {
             implementation(project(":core:common"))
             implementation(project(":domain"))
-            implementation(project(":core:database"))
             api(libs.ktor.client.core)
             api(libs.ktor.client.content.negotiation)
             api(libs.ktor.serialization.json)
@@ -27,6 +26,7 @@ kotlin {
         }
         androidMain.dependencies {
             implementation(libs.ktor.client.okhttp)
+            implementation(project(":core:database"))
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)

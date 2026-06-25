@@ -19,6 +19,8 @@ kotlin {
             api(project(":feature:devices:devices-domain"))
             implementation(project(":core:network"))
             implementation(project(":core:common"))
+        }
+        androidMain.dependencies {
             implementation(project(":core:database"))
         }
     }
