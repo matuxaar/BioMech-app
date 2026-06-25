@@ -43,7 +43,7 @@ val sharedModule = module {
 
     factory { LoginViewModel(get()) }
     factory { DashboardViewModel(get(), get()) }
-    factory { DevicesViewModel(get()) }
+    factory { DevicesViewModel(get(), get()) }
     factory { HomeViewModel(get()) }
     factory { ProfileViewModel(get()) }
     factory { TrainingViewModel(get(), get()) }
