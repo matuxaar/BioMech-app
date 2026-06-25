@@ -9,6 +9,7 @@ import com.biomech.core.base.theme.BioMechTheme
 import com.biomech.core.navigation.LocalNavigator
 import com.biomech.core.navigation.Navigator
 import com.biomech.core.navigation.Screen
+import com.biomech.domain.repository.AuthRepository
 import com.biomech.feature.auth.LoginScreen
 import com.biomech.feature.auth.LoginViewModel
 import com.biomech.feature.training.TrainingScreen
@@ -18,6 +19,18 @@ import org.koin.compose.koinInject
 @Composable
 fun App() {
     val navigator = remember { Navigator() }
+    val authRepo: AuthRepository = koinInject()
+    var checkingLogin by remember { mutableStateOf(true) }
+
+    LaunchedEffect(Unit) {
+        val token = authRepo.getToken()
+        if (token != null) {
+            navigator.navigateAndClear(Screen.Main)
+        }
+        checkingLogin = false
+    }
+
+    if (checkingLogin) return
 
     BioMechTheme {
         CompositionLocalProvider(LocalNavigator provides navigator) {
@@ -37,8 +50,10 @@ fun App() {
                         }
 
                         LoginScreen(
+                            isLoading = state.isLoading,
+                            error = state.error,
                             onLogin = { email, password -> viewModel.login(email, password) },
-                            onRegister = { email, password -> viewModel.login(email, password) },
+                            onRegister = { email, password -> viewModel.register(email, password) },
                         )
                     }
 

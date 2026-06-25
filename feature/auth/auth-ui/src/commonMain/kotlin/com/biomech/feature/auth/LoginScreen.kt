@@ -12,6 +12,8 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun LoginScreen(
+    isLoading: Boolean,
+    error: String?,
     onLogin: (email: String, password: String) -> Unit,
     onRegister: (email: String, password: String) -> Unit,
 ) {
@@ -39,6 +41,7 @@ fun LoginScreen(
             label = { Text("Email") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             singleLine = true,
+            enabled = !isLoading,
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -51,22 +54,41 @@ fun LoginScreen(
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             singleLine = true,
+            enabled = !isLoading,
             modifier = Modifier.fillMaxWidth()
         )
+
+        if (error != null) {
+            Spacer(Modifier.height(16.dp))
+            Text(
+                text = error,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
 
         Spacer(Modifier.height(32.dp))
 
         Button(
             onClick = { onLogin(email, password) },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !isLoading,
         ) {
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    strokeWidth = 2.dp,
+                )
+                Spacer(Modifier.width(8.dp))
+            }
             Text("Login")
         }
 
         Spacer(Modifier.height(8.dp))
 
         TextButton(
-            onClick = { onRegister(email, password) }
+            onClick = { onRegister(email, password) },
+            enabled = !isLoading,
         ) {
             Text("Register")
         }
