@@ -7,8 +7,6 @@ build/
 captures
 .externalNativeBuild
 .cxx
-*.xcodeproj
-*.xcworkspace
 Pods/
 .kotlin/
 core/firebase/src/commonMain/kotlin/com/biomech/core/firebase/FirebaseConfig.kt
