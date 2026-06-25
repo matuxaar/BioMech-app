@@ -10,6 +10,7 @@ import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 
 import com.biomech.core.firebase.FirebaseConfig
+import com.biomech.core.network.dto.*
 
 private val FIREBASE_API_KEY get() = FirebaseConfig.API_KEY
 
