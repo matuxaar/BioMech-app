@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.biomech.core.navigation.LocalNavigator
 import com.biomech.core.navigation.Screen
 import com.biomech.domain.model.Device
@@ -248,7 +249,7 @@ private fun BottomTabItem(
             )
             .padding(horizontal = 4.dp, vertical = 3.dp)
     ) {
-        Text(emoji, style = MaterialTheme.typography.titleMedium)
+        Text(emoji, fontSize = 24.sp)
         Text(
             label,
             style = MaterialTheme.typography.labelSmall,

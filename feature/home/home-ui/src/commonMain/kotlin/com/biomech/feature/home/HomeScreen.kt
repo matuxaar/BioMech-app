@@ -1,5 +1,7 @@
 package com.biomech.feature.home
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -11,13 +13,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.biomech.domain.model.Device
+import com.biomech.domain.model.DeviceType
 
+private fun deviceEmoji(type: DeviceType): String = when (type) {
+    DeviceType.PROSTHETIC -> "\uD83E\uDDBE"
+    DeviceType.SENSOR -> "\u2699\uFE0F"
+}
+
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun HomeScreen(
     devices: List<Device>,
     onAddDevice: () -> Unit,
     onDeviceClick: (Device) -> Unit,
+    onEditDevice: ((Device) -> Unit)? = null,
+    onDeleteDevice: ((Device) -> Unit)? = null,
 ) {
     Scaffold(
         topBar = {
@@ -75,9 +87,15 @@ fun HomeScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 items(devices) { device ->
+                    var showMenu by remember { mutableStateOf(false) }
+
                     Card(
-                        onClick = { onDeviceClick(device) },
-                        modifier = Modifier.aspectRatio(1f),
+                        modifier = Modifier
+                            .aspectRatio(1f)
+                            .combinedClickable(
+                                onClick = { onDeviceClick(device) },
+                                onLongClick = { showMenu = true },
+                            ),
                     ) {
                         Box(
                             modifier = Modifier.fillMaxSize().padding(16.dp),
@@ -88,15 +106,20 @@ fun HomeScreen(
                                 verticalArrangement = Arrangement.Center,
                             ) {
                                 Text(
+                                    deviceEmoji(device.type),
+                                    fontSize = 36.sp,
+                                )
+                                Spacer(Modifier.height(10.dp))
+                                Text(
                                     device.name,
                                     style = MaterialTheme.typography.titleSmall,
                                     textAlign = TextAlign.Center,
                                     maxLines = 2,
                                     overflow = TextOverflow.Ellipsis,
                                 )
-                                Spacer(Modifier.height(6.dp))
+                                Spacer(Modifier.height(4.dp))
                                 Text(
-                                    "${device.type.name}",
+                                    device.type.name.lowercase().replaceFirstChar { it.uppercase() },
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     textAlign = TextAlign.Center,
@@ -109,6 +132,26 @@ fun HomeScreen(
                                 )
                             }
                         }
+                    }
+
+                    DropdownMenu(
+                        expanded = showMenu,
+                        onDismissRequest = { showMenu = false },
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("Edit") },
+                            onClick = {
+                                showMenu = false
+                                onEditDevice?.invoke(device)
+                            },
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Delete") },
+                            onClick = {
+                                showMenu = false
+                                onDeleteDevice?.invoke(device)
+                            },
+                        )
                     }
                 }
             }
