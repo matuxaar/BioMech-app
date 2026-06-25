@@ -17,4 +17,14 @@ class DeviceApi {
             setBody(request)
         }.body()
     }
+
+    suspend fun updateDevice(id: String, request: UpdateDeviceRequest): DeviceDto {
+        return client.put("/api/v1/devices/$id") {
+            setBody(request)
+        }.body()
+    }
+
+    suspend fun deleteDevice(id: String) {
+        client.delete("/api/v1/devices/$id")
+    }
 }

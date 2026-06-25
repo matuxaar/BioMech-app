@@ -1,20 +1,23 @@
 package com.biomech.feature.home
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupProperties
 import com.biomech.domain.model.Device
 import com.biomech.domain.model.DeviceType
 
@@ -22,6 +25,14 @@ private fun deviceEmoji(type: DeviceType): String = when (type) {
     DeviceType.PROSTHETIC -> "\uD83E\uDDBE"
     DeviceType.SENSOR -> "\u2699\uFE0F"
 }
+
+private data class ActionItem(val emoji: String, val label: String)
+
+private val menuActions = listOf(
+    ActionItem("\uD83C\uDFAF", "Training"),
+    ActionItem("\u270F\uFE0F", "Edit"),
+    ActionItem("\uD83D\uDDD1\uFE0F", "Delete"),
+)
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -133,35 +144,60 @@ fun HomeScreen(
                     }
                 }
 
-                DropdownMenu(
-                    expanded = showMenu,
-                    onDismissRequest = { showMenu = false },
-                    offset = DpOffset(8.dp, 0.dp),
-                ) {
-                    DropdownMenuItem(
-                        text = { Text("Training") },
-                        onClick = {
-                            showMenu = false
-                            onNavigateToTraining?.invoke(device)
-                        },
-                    )
-                    HorizontalDivider()
-                    DropdownMenuItem(
-                        text = { Text("Edit") },
-                        onClick = {
-                            showMenu = false
-                            onEditDevice?.invoke(device)
-                        },
-                    )
-                    DropdownMenuItem(
-                        text = { Text("Delete") },
-                        onClick = {
-                            showMenu = false
-                            onDeleteDevice?.invoke(device)
-                        },
-                    )
+                if (showMenu) {
+                    Popup(
+                        onDismissRequest = { showMenu = false },
+                        alignment = Alignment.TopEnd,
+                        properties = PopupProperties(focusable = true),
+                    ) {
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.widthIn(min = 140.dp),
+                        ) {
+                            menuActions.forEach { action ->
+                                val onClick: () -> Unit = {
+                                    showMenu = false
+                                    when (action.label) {
+                                        "Training" -> onNavigateToTraining?.invoke(device)
+                                        "Edit" -> onEditDevice?.invoke(device)
+                                        "Delete" -> onDeleteDevice?.invoke(device)
+                                        else -> Unit
+                                    }
+                                }
+                                ActionCard(
+                                    emoji = action.emoji,
+                                    text = action.label,
+                                    onClick = onClick,
+                                )
+                            }
+                        }
+                    }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun ActionCard(
+    emoji: String,
+    text: String,
+    onClick: () -> Unit,
+) {
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(14.dp),
+        color = MaterialTheme.colorScheme.surface,
+        tonalElevation = 3.dp,
+        shadowElevation = 6.dp,
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(emoji, fontSize = 20.sp)
+            Spacer(Modifier.width(10.dp))
+            Text(text, style = MaterialTheme.typography.bodyMedium)
         }
     }
 }

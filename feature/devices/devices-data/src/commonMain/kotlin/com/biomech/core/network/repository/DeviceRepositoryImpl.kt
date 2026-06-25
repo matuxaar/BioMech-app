@@ -3,6 +3,7 @@ package com.biomech.core.network.repository
 import com.biomech.core.common.AppResult
 import com.biomech.core.network.api.DeviceApi
 import com.biomech.core.network.dto.CreateDeviceRequest
+import com.biomech.core.network.dto.UpdateDeviceRequest
 import com.biomech.domain.model.Device
 import com.biomech.domain.model.DeviceType
 import com.biomech.domain.repository.DeviceRepository
@@ -30,6 +31,28 @@ open class DeviceRepositoryImpl(
             AppResult.Success(device)
         } catch (e: Exception) {
             AppResult.Error(e.message ?: "Failed to create device")
+        }
+    }
+
+    override suspend fun updateDevice(id: String, name: String?, hwVersion: String?, type: String?): AppResult<Device> {
+        return try {
+            val dto = deviceApi.updateDevice(id, UpdateDeviceRequest(
+                name = name,
+                hw_version = hwVersion,
+                type = type,
+            ))
+            AppResult.Success(dto.toDomain())
+        } catch (e: Exception) {
+            AppResult.Error(e.message ?: "Failed to update device")
+        }
+    }
+
+    override suspend fun deleteDevice(id: String): AppResult<Unit> {
+        return try {
+            deviceApi.deleteDevice(id)
+            AppResult.Success(Unit)
+        } catch (e: Exception) {
+            AppResult.Error(e.message ?: "Failed to delete device")
         }
     }
 

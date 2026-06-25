@@ -24,6 +24,7 @@ import com.biomech.feature.devices.DeviceDetailSheet
 import com.biomech.feature.devices.DevicesAction
 import com.biomech.feature.devices.DevicesEvent
 import com.biomech.feature.devices.DevicesViewModel
+import com.biomech.feature.devices.EditDeviceBottomSheet
 import com.biomech.feature.home.HomeAction
 import com.biomech.feature.home.HomeViewModel
 import com.biomech.feature.home.HomeScreen
@@ -54,6 +55,10 @@ fun MainScreen(isOffline: Boolean = false) {
     var showAddDeviceSheet by remember { mutableStateOf(false) }
     var email by remember { mutableStateOf("user@example.com") }
     var selectedDevice by remember { mutableStateOf<Device?>(null) }
+    var showEditSheet by remember { mutableStateOf(false) }
+    var editingDevice by remember { mutableStateOf<Device?>(null) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var deletingDevice by remember { mutableStateOf<Device?>(null) }
 
     val homeViewModel: HomeViewModel = koinInject()
     val homeState by homeViewModel.state.collectAsState()
@@ -99,6 +104,15 @@ fun MainScreen(isOffline: Boolean = false) {
                         showAddDeviceSheet = false
                         homeViewModel.dispatch(HomeAction.LoadDevices)
                     }
+                    DevicesEvent.DeviceUpdated -> {
+                        showEditSheet = false
+                        editingDevice = null
+                        homeViewModel.dispatch(HomeAction.LoadDevices)
+                    }
+                    DevicesEvent.DeviceDeleted -> {
+                        deletingDevice = null
+                        homeViewModel.dispatch(HomeAction.LoadDevices)
+                    }
                 }
             }
         }
@@ -134,6 +148,69 @@ fun MainScreen(isOffline: Boolean = false) {
             DeviceDetailSheet(
                 device = device,
                 onDismiss = { selectedDevice = null },
+            )
+        }
+    }
+
+    editingDevice?.let { device ->
+        if (showEditSheet) {
+            ModalBottomSheet(
+                onDismissRequest = {
+                    showEditSheet = false
+                    editingDevice = null
+                }
+            ) {
+                EditDeviceBottomSheet(
+                    device = device,
+                    isUpdating = devicesState.isUpdating,
+                    updateError = devicesState.updateError,
+                    onUpdateDevice = { name, hwVersion ->
+                        devicesViewModel.dispatch(DevicesAction.UpdateDevice(
+                            id = device.id,
+                            name = name,
+                            hwVersion = hwVersion,
+                            type = null,
+                        ))
+                    },
+                    onDismiss = {
+                        showEditSheet = false
+                        editingDevice = null
+                    },
+                )
+            }
+        }
+    }
+
+    deletingDevice?.let { device ->
+        if (showDeleteDialog) {
+            AlertDialog(
+                onDismissRequest = {
+                    showDeleteDialog = false
+                    deletingDevice = null
+                },
+                title = { Text("Delete Device") },
+                text = { Text("Are you sure you want to delete ${device.name}?") },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            showDeleteDialog = false
+                            devicesViewModel.dispatch(DevicesAction.DeleteDevice(device.id))
+                        },
+                        colors = ButtonDefaults.textButtonColors(
+                            contentColor = MaterialTheme.colorScheme.error
+                        ),
+                    ) {
+                        Text("Delete")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = {
+                        showDeleteDialog = false
+                        deletingDevice = null
+                    }) {
+                        Text("Cancel")
+                    }
+                },
             )
         }
     }
@@ -209,6 +286,14 @@ fun MainScreen(isOffline: Boolean = false) {
                         onAddDevice = { showAddDeviceSheet = true },
                         onDeviceClick = { device -> selectedDevice = device },
                         onNavigateToTraining = { navigator.navigateTo(Screen.Training) },
+                        onEditDevice = { device ->
+                            editingDevice = device
+                            showEditSheet = true
+                        },
+                        onDeleteDevice = { device ->
+                            deletingDevice = device
+                            showDeleteDialog = true
+                        },
                     )
                 }
                 BottomTab.PROFILE -> {

@@ -17,6 +17,8 @@ data class DevicesState(
     val isScanning: Boolean = false,
     val isCreating: Boolean = false,
     val createError: String? = null,
+    val isUpdating: Boolean = false,
+    val updateError: String? = null,
 ) : BaseState
 
 sealed class DevicesAction : BaseAction {
@@ -28,10 +30,19 @@ sealed class DevicesAction : BaseAction {
         val type: String,
         val hwVersion: String,
     ) : DevicesAction()
+    data class UpdateDevice(
+        val id: String,
+        val name: String?,
+        val hwVersion: String?,
+        val type: String?,
+    ) : DevicesAction()
+    data class DeleteDevice(val id: String) : DevicesAction()
 }
 
 sealed class DevicesEvent : BaseEvent {
     data object DeviceCreated : DevicesEvent()
+    data object DeviceUpdated : DevicesEvent()
+    data object DeviceDeleted : DevicesEvent()
 }
 
 class DevicesViewModel(
@@ -64,6 +75,8 @@ class DevicesViewModel(
                 bleManager.connect(action.deviceId)
             }
             is DevicesAction.CreateDevice -> createDevice(action.name, action.type, action.hwVersion)
+            is DevicesAction.UpdateDevice -> updateDevice(action.id, action.name, action.hwVersion, action.type)
+            is DevicesAction.DeleteDevice -> deleteDevice(action.id)
         }
     }
 
@@ -77,6 +90,26 @@ class DevicesViewModel(
             is AppResult.Error -> {
                 _state.value = _state.value.copy(isCreating = false, createError = result.message)
             }
+        }
+    }
+
+    private suspend fun updateDevice(id: String, name: String?, hwVersion: String?, type: String?) {
+        _state.value = _state.value.copy(isUpdating = true, updateError = null)
+        when (val result = deviceRepository.updateDevice(id, name, hwVersion, type)) {
+            is AppResult.Success -> {
+                _state.value = _state.value.copy(isUpdating = false)
+                _event.send(DevicesEvent.DeviceUpdated)
+            }
+            is AppResult.Error -> {
+                _state.value = _state.value.copy(isUpdating = false, updateError = result.message)
+            }
+        }
+    }
+
+    private suspend fun deleteDevice(id: String) {
+        when (val result = deviceRepository.deleteDevice(id)) {
+            is AppResult.Success -> _event.send(DevicesEvent.DeviceDeleted)
+            is AppResult.Error -> { /* error handled by caller */ }
         }
     }
 }
