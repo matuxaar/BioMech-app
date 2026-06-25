@@ -19,11 +19,15 @@ kotlin {
         commonMain.dependencies {
             implementation(project(":core:common"))
             implementation(project(":domain"))
-            implementation(libs.room.runtime)
+            api(libs.room.common)
             implementation(libs.kotlinx.coroutines.core)
         }
         androidMain.dependencies {
+            implementation(libs.room.runtime)
             implementation(libs.room.ktx)
+        }
+        iosMain.dependencies {
+            implementation(libs.room.runtime)
         }
     }
 }

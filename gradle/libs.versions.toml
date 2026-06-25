@@ -34,6 +34,7 @@ coil-network-ktor3 = { module = "io.coil-kt.coil3:coil-network-ktor3", version.r
 
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version = "1.9.3" }
 
+room-common = { module = "androidx.room:room-common", version.ref = "room" }
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
