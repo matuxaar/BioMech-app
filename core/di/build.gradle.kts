@@ -24,6 +24,7 @@ kotlin {
             implementation(project(":core:ble"))
             implementation(project(":core:storage"))
             implementation(project(":core:database"))
+            implementation(libs.room.runtime)
             implementation(project(":domain"))
             implementation(project(":feature:auth:auth-domain"))
             implementation(project(":feature:auth:auth-api"))
