@@ -9,6 +9,7 @@ import com.biomech.core.base.theme.BioMechTheme
 import com.biomech.core.navigation.LocalNavigator
 import com.biomech.core.navigation.Navigator
 import com.biomech.core.navigation.Screen
+import com.biomech.core.network.ApiConfig
 import com.biomech.domain.repository.AuthRepository
 import com.biomech.feature.auth.LoginAction
 import com.biomech.feature.auth.LoginEvent
@@ -17,23 +18,54 @@ import com.biomech.feature.auth.LoginViewModel
 import com.biomech.feature.training.TrainingAction
 import com.biomech.feature.training.TrainingScreen
 import com.biomech.feature.training.TrainingViewModel
+import io.ktor.client.*
+import io.ktor.client.plugins.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import kotlinx.coroutines.withTimeout
 import org.koin.compose.koinInject
+
+private val healthClient by lazy {
+    HttpClient {
+        install(HttpTimeout) {
+            requestTimeoutMillis = 3_000
+            connectTimeoutMillis = 3_000
+        }
+    }
+}
+
+private suspend fun isApiAvailable(): Boolean {
+    return try {
+        withTimeout(4_000) {
+            val response = healthClient.get(ApiConfig.baseUrl)
+            true
+        }
+    } catch (_: Exception) {
+        false
+    }
+}
 
 @Composable
 fun App() {
     val navigator = remember { Navigator() }
     val authRepo: AuthRepository = koinInject()
-    var checkingLogin by remember { mutableStateOf(true) }
+    var startupState by remember { mutableStateOf<AppStartupState>(AppStartupState.Loading) }
 
     LaunchedEffect(Unit) {
+        val apiUp = isApiAvailable()
+        if (!apiUp) {
+            startupState = AppStartupState.Offline
+            navigator.navigateAndClear(Screen.Main)
+            return@LaunchedEffect
+        }
         val token = authRepo.getToken()
         if (token != null) {
             navigator.navigateAndClear(Screen.Main)
         }
-        checkingLogin = false
+        startupState = AppStartupState.Ready
     }
 
-    if (checkingLogin) return
+    if (startupState == AppStartupState.Loading) return
 
     BioMechTheme {
         CompositionLocalProvider(LocalNavigator provides navigator) {
@@ -63,11 +95,14 @@ fun App() {
                             onRegister = { email, password ->
                                 viewModel.dispatch(LoginAction.Register(email, password))
                             },
+                            onSkip = {
+                                navigator.navigateAndClear(Screen.Main)
+                            },
                         )
                     }
 
                     Screen.Main -> {
-                        MainScreen()
+                        MainScreen(isOffline = startupState == AppStartupState.Offline)
                     }
 
                     Screen.Training -> {
@@ -86,4 +121,10 @@ fun App() {
             }
         }
     }
+}
+
+private sealed interface AppStartupState {
+    data object Loading : AppStartupState
+    data object Ready : AppStartupState
+    data object Offline : AppStartupState
 }

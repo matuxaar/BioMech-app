@@ -1,9 +1,11 @@
 package com.biomech.app
 
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.biomech.core.navigation.LocalNavigator
 import com.biomech.core.navigation.Screen
 import com.biomech.feature.devices.AddDeviceBottomSheet
@@ -28,7 +30,7 @@ enum class BottomTab { HOME, PROFILE, SETTINGS }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen() {
+fun MainScreen(isOffline: Boolean = false) {
     val navigator = LocalNavigator.current
     var selectedTab by remember { mutableStateOf(BottomTab.HOME) }
     var showAddDeviceSheet by remember { mutableStateOf(false) }
@@ -90,6 +92,21 @@ fun MainScreen() {
     }
 
     Scaffold(
+        topBar = {
+            if (isOffline) {
+                Surface(
+                    color = MaterialTheme.colorScheme.errorContainer,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(
+                        text = "Offline mode — server unavailable",
+                        modifier = Modifier.padding(8.dp),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onErrorContainer,
+                    )
+                }
+            }
+        },
         bottomBar = {
             NavigationBar {
                 NavigationBarItem(

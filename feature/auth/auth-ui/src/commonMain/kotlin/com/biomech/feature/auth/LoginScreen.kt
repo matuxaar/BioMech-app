@@ -16,6 +16,7 @@ fun LoginScreen(
     error: String?,
     onLogin: (email: String, password: String) -> Unit,
     onRegister: (email: String, password: String) -> Unit,
+    onSkip: (() -> Unit)? = null,
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -91,6 +92,18 @@ fun LoginScreen(
             enabled = !isLoading,
         ) {
             Text("Register")
+        }
+
+        if (onSkip != null) {
+            Spacer(Modifier.height(24.dp))
+            TextButton(
+                onClick = onSkip,
+            ) {
+                Text(
+                    "Skip — explore offline",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
     }
 }
