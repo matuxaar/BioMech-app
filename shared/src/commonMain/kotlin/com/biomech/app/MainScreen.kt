@@ -1,10 +1,12 @@
 package com.biomech.app
 
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.biomech.core.navigation.LocalNavigator
 import com.biomech.core.navigation.Screen
@@ -146,25 +148,56 @@ fun MainScreen(isOffline: Boolean = false) {
             }
         },
         bottomBar = {
-            NavigationBar {
-                NavigationBarItem(
-                    selected = selectedTab == BottomTab.HOME,
-                    onClick = { selectedTab = BottomTab.HOME },
-                    icon = { Text("🏠") },
-                    label = { Text("Home") },
-                )
-                NavigationBarItem(
-                    selected = selectedTab == BottomTab.PROFILE,
-                    onClick = { selectedTab = BottomTab.PROFILE },
-                    icon = { Text("👤") },
-                    label = { Text("Profile") },
-                )
-                NavigationBarItem(
-                    selected = selectedTab == BottomTab.SETTINGS,
-                    onClick = { selectedTab = BottomTab.SETTINGS },
-                    icon = { Text("⚙️") },
-                    label = { Text("Settings") },
-                )
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.BottomCenter
+            ) {
+                Surface(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(28.dp)),
+                    shape = RoundedCornerShape(28.dp),
+                    color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.85f),
+                    tonalElevation = 8.dp,
+                    shadowElevation = 12.dp,
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        NavigationBarItem(
+                            selected = selectedTab == BottomTab.HOME,
+                            onClick = { selectedTab = BottomTab.HOME },
+                            icon = { Text("🏠") },
+                            label = { Text("Home") },
+                            colors = NavigationBarItemDefaults.colors(
+                                indicatorColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f),
+                            ),
+                        )
+                        NavigationBarItem(
+                            selected = selectedTab == BottomTab.PROFILE,
+                            onClick = { selectedTab = BottomTab.PROFILE },
+                            icon = { Text("👤") },
+                            label = { Text("Profile") },
+                            colors = NavigationBarItemDefaults.colors(
+                                indicatorColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f),
+                            ),
+                        )
+                        NavigationBarItem(
+                            selected = selectedTab == BottomTab.SETTINGS,
+                            onClick = { selectedTab = BottomTab.SETTINGS },
+                            icon = { Text("⚙️") },
+                            label = { Text("Settings") },
+                            colors = NavigationBarItemDefaults.colors(
+                                indicatorColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f),
+                            ),
+                        )
+                    }
+                }
             }
         }
     ) { padding ->
