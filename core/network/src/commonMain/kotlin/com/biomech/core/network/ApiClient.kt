@@ -11,7 +11,7 @@ import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 
 object ApiConfig {
-    var baseUrl: String = "http://localhost:8080/api/v1"
+    var baseUrl: String = "http://localhost:8080/api/v1/"
     var token: String? = null
 
     val healthUrl: String
