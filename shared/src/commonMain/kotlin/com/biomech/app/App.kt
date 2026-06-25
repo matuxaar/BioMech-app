@@ -39,8 +39,8 @@ private val healthClient by lazy {
 private suspend fun isApiAvailable(): Boolean {
     return try {
         withTimeout(4_000) {
-            healthClient.get(ApiConfig.healthUrl)
-            true
+            val response = healthClient.get(ApiConfig.healthUrl)
+            response.status == io.ktor.http.HttpStatusCode.OK
         }
     } catch (_: Exception) {
         false

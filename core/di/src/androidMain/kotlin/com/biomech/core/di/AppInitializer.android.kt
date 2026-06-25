@@ -36,7 +36,7 @@ actual val platformModule: Module = module {
 }
 
 actual fun initKoin(context: PlatformContext) {
-    com.biomech.core.network.ApiConfig.baseUrl = "http://10.0.2.2:8080/api/v1"
+    com.biomech.core.network.ApiConfig.baseUrl = "http://localhost:8080/api/v1"
     org.koin.core.context.startKoin {
         androidContext(context.androidContext)
         modules(

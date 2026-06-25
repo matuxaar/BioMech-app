@@ -5,6 +5,7 @@ import io.ktor.client.call.*
 import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
@@ -14,9 +15,11 @@ import com.biomech.core.network.dto.*
 
 private val FIREBASE_API_KEY get() = FirebaseConfig.API_KEY
 
+private val firebaseJson = Json { ignoreUnknownKeys = true; isLenient = true }
+
 private fun firebaseClient() = HttpClient {
     install(ContentNegotiation) {
-        json(Json { ignoreUnknownKeys = true; isLenient = true })
+        json(firebaseJson)
     }
     install(HttpTimeout) {
         requestTimeoutMillis = 30_000
@@ -27,6 +30,19 @@ private fun firebaseClient() = HttpClient {
     }
 }
 
+private suspend fun HttpResponse.checkFirebaseError(): HttpResponse {
+    if (!status.isSuccess()) {
+        val body = bodyAsText()
+        val errorMsg = try {
+            firebaseJson.decodeFromString<FirebaseErrorResponse>(body).error.message
+        } catch (_: Exception) {
+            body
+        }
+        throw Exception(errorMsg)
+    }
+    return this
+}
+
 class AuthApi {
     private val client = firebaseClient()
 
@@ -34,20 +50,20 @@ class AuthApi {
         return client.post("https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword") {
             parameter("key", FIREBASE_API_KEY)
             setBody(FirebaseSignInRequest(email, password, returnSecureToken = true))
-        }.body()
+        }.checkFirebaseError().body()
     }
 
     suspend fun signUp(email: String, password: String): FirebaseAuthResponse {
         return client.post("https://identitytoolkit.googleapis.com/v1/accounts:signUp") {
             parameter("key", FIREBASE_API_KEY)
             setBody(FirebaseSignInRequest(email, password, returnSecureToken = true))
-        }.body()
+        }.checkFirebaseError().body()
     }
 
     suspend fun refreshToken(refreshToken: String): FirebaseTokenRefreshResponse {
         return client.post("https://securetoken.googleapis.com/v1/token") {
             parameter("key", FIREBASE_API_KEY)
             setBody(FirebaseTokenRefreshRequest(refreshToken, "refresh_token"))
-        }.body()
+        }.checkFirebaseError().body()
     }
 }

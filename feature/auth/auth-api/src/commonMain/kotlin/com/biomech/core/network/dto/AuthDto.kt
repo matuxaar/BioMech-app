@@ -31,3 +31,14 @@ data class FirebaseTokenRefreshResponse(
     @SerialName("user_id") val userId: String,
     val email: String,
 )
+
+@Serializable
+data class FirebaseErrorResponse(
+    val error: FirebaseErrorDetail,
+)
+
+@Serializable
+data class FirebaseErrorDetail(
+    val code: Int = 0,
+    val message: String = "",
+)
