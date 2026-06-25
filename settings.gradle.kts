@@ -41,6 +41,7 @@ include(":core:update")
 include(":core:notifications")
 include(":core:crash")
 include(":core:network")
+include(":core:firebase")
 include(":core:ble")
 include(":core:database")
 

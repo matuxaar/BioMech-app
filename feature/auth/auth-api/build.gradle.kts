@@ -17,6 +17,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(project(":core:network"))
+            implementation(project(":core:firebase"))
             implementation(libs.ktor.client.core)
             implementation(libs.kotlinx.serialization.json)
         }

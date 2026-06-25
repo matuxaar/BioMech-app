@@ -9,7 +9,9 @@ import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 
-private const val FIREBASE_API_KEY = "AIzaSyD1ZovNqXqQHcs4jKPkow2txshvCdg7sPU"
+import com.biomech.core.firebase.FirebaseConfig
+
+private val FIREBASE_API_KEY get() = FirebaseConfig.API_KEY
 
 private fun firebaseClient() = HttpClient {
     install(ContentNegotiation) {
