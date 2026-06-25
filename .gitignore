@@ -9,4 +9,6 @@ captures
 .cxx
 Pods/
 .kotlin/
+*.xcuserdata
+DerivedData/
 core/firebase/src/commonMain/kotlin/com/biomech/core/firebase/FirebaseConfig.kt
