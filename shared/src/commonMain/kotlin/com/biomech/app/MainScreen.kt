@@ -149,12 +149,14 @@ fun MainScreen(isOffline: Boolean = false) {
         },
         bottomBar = {
             Box(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 80.dp)
+                    .padding(bottom = 20.dp),
                 contentAlignment = Alignment.BottomCenter
             ) {
                 Surface(
                     modifier = Modifier
-                        .padding(horizontal = 80.dp, vertical = 6.dp)
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(24.dp)),
                     shape = RoundedCornerShape(24.dp),
