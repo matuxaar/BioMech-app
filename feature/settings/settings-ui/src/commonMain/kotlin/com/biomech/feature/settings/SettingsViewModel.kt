@@ -9,7 +9,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 
 data class SettingsState(
-    val serverUrl: String = "http://10.0.2.2:8080/api/v1",
+    val serverUrl: String = "http://localhost:8080/api/v1",
 ) : BaseState
 
 sealed class SettingsAction : BaseAction {
