@@ -18,6 +18,7 @@ actual fun initKoin(context: PlatformContext) {
     org.koin.core.context.startKoin {
         androidContext(context.androidContext)
         modules(
+            module { single { context } },
             platformModule,
             storageModule,
             databaseModule,
