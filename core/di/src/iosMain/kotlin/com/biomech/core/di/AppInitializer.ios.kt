@@ -16,6 +16,7 @@ actual val platformModule: Module = module {
 actual fun initKoin(context: PlatformContext) {
     org.koin.core.context.startKoin {
         modules(
+            module { single { context } },
             platformModule,
             storageModule,
             databaseModule,
