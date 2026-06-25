@@ -214,9 +214,7 @@ fun MainScreen(isOffline: Boolean = false) {
                 BottomTab.PROFILE -> {
                     ProfileScreen(
                         email = if (isOffline) "demo@biomech.app" else profileState.email,
-                        onLogout = {
-                            profileViewModel.dispatch(ProfileAction.Logout)
-                        },
+                        deviceCount = (if (isOffline) offlineDevices else homeState.devices).size,
                     )
                 }
                 BottomTab.SETTINGS -> {
