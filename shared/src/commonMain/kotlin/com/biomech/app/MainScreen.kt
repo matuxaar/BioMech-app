@@ -154,11 +154,11 @@ fun MainScreen(isOffline: Boolean = false) {
             ) {
                 Surface(
                     modifier = Modifier
-                        .padding(horizontal = 24.dp, vertical = 4.dp)
+                        .padding(horizontal = 80.dp, vertical = 6.dp)
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(20.dp)),
-                    shape = RoundedCornerShape(20.dp),
-                    color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.85f),
+                        .clip(RoundedCornerShape(24.dp)),
+                    shape = RoundedCornerShape(24.dp),
+                    color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.88f),
                     tonalElevation = 8.dp,
                     shadowElevation = 12.dp,
                 ) {

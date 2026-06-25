@@ -9,11 +9,11 @@ class DeviceApi {
     private val client = createHttpClient()
 
     suspend fun getDevices(): List<DeviceDto> {
-        return client.get("/devices").body()
+        return client.get("devices").body()
     }
 
     suspend fun createDevice(request: CreateDeviceRequest): DeviceDto {
-        return client.post("/devices") {
+        return client.post("devices") {
             setBody(request)
         }.body()
     }
