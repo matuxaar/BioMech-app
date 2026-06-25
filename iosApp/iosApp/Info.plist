@@ -12,5 +12,7 @@
     <string>0.1.0</string>
     <key>UILaunchScreen</key>
     <dict/>
+    <key>CADisableMinimumFrameDurationOnPhone</key>
+    <true/>
 </dict>
 </plist>
