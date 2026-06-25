@@ -2,23 +2,33 @@ package com.biomech.feature.devices
 
 import com.biomech.core.ble.BleDevice
 import com.biomech.core.ble.BleManager
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import com.biomech.core.mvi.BaseAction
+import com.biomech.core.mvi.BaseEvent
+import com.biomech.core.mvi.BaseState
+import com.biomech.core.mvi.BaseViewModel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-data class DevicesUiState(
+data class DevicesState(
     val scannedDevices: List<BleDevice> = emptyList(),
     val isScanning: Boolean = false,
-)
+) : BaseState
+
+sealed class DevicesAction : BaseAction {
+    data object StartScan : DevicesAction()
+    data object StopScan : DevicesAction()
+    data class Connect(val deviceId: String) : DevicesAction()
+}
+
+sealed class DevicesEvent : BaseEvent
 
 class DevicesViewModel(
     private val bleManager: BleManager,
-) {
-    private val scope = CoroutineScope(Dispatchers.Main)
-    private val _state = MutableStateFlow(DevicesUiState())
-    val state = _state.asStateFlow()
+) : BaseViewModel<DevicesState, DevicesAction, DevicesEvent>() {
+
+    override val _state = MutableStateFlow(DevicesState())
+    override val _event = Channel<DevicesEvent>(Channel.BUFFERED)
 
     init {
         scope.launch {
@@ -28,23 +38,19 @@ class DevicesViewModel(
         }
     }
 
-    fun startScan() {
-        scope.launch {
-            _state.value = _state.value.copy(isScanning = true)
-            bleManager.startScanning()
-        }
-    }
-
-    fun stopScan() {
-        scope.launch {
-            bleManager.stopScanning()
-            _state.value = _state.value.copy(isScanning = false)
-        }
-    }
-
-    fun connect(deviceId: String) {
-        scope.launch {
-            bleManager.connect(deviceId)
+    override suspend fun handleAction(action: DevicesAction) {
+        when (action) {
+            DevicesAction.StartScan -> {
+                _state.value = _state.value.copy(isScanning = true)
+                bleManager.startScanning()
+            }
+            DevicesAction.StopScan -> {
+                bleManager.stopScanning()
+                _state.value = _state.value.copy(isScanning = false)
+            }
+            is DevicesAction.Connect -> {
+                bleManager.connect(action.deviceId)
+            }
         }
     }
 }

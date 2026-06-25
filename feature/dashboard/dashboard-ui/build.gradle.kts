@@ -18,6 +18,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(project(":domain"))
+            implementation(project(":core:mvi"))
             implementation(project(":core:ble"))
             implementation(project(":core:common"))
             implementation(project(":core:base"))

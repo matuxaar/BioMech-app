@@ -10,8 +10,11 @@ import com.biomech.core.navigation.LocalNavigator
 import com.biomech.core.navigation.Navigator
 import com.biomech.core.navigation.Screen
 import com.biomech.domain.repository.AuthRepository
+import com.biomech.feature.auth.LoginAction
+import com.biomech.feature.auth.LoginEvent
 import com.biomech.feature.auth.LoginScreen
 import com.biomech.feature.auth.LoginViewModel
+import com.biomech.feature.training.TrainingAction
 import com.biomech.feature.training.TrainingScreen
 import com.biomech.feature.training.TrainingViewModel
 import org.koin.compose.koinInject
@@ -43,17 +46,23 @@ fun App() {
                         val viewModel: LoginViewModel = koinInject()
                         val state by viewModel.state.collectAsState()
 
-                        LaunchedEffect(state.isLoggedIn) {
-                            if (state.isLoggedIn) {
-                                navigator.navigateAndClear(Screen.Main)
+                        LaunchedEffect(Unit) {
+                            viewModel.event.collect { event ->
+                                when (event) {
+                                    LoginEvent.NavigateToMain -> navigator.navigateAndClear(Screen.Main)
+                                }
                             }
                         }
 
                         LoginScreen(
                             isLoading = state.isLoading,
                             error = state.error,
-                            onLogin = { email, password -> viewModel.login(email, password) },
-                            onRegister = { email, password -> viewModel.register(email, password) },
+                            onLogin = { email, password ->
+                                viewModel.dispatch(LoginAction.Login(email, password))
+                            },
+                            onRegister = { email, password ->
+                                viewModel.dispatch(LoginAction.Register(email, password))
+                            },
                         )
                     }
 
@@ -69,8 +78,8 @@ fun App() {
                             jobs = state.jobs,
                             sessionLabels = state.sessionLabels,
                             selectedSessions = state.selectedSessions,
-                            onToggleSession = { viewModel.toggleSession(it) },
-                            onStartTraining = { viewModel.startTraining() },
+                            onToggleSession = { viewModel.dispatch(TrainingAction.ToggleSession(it)) },
+                            onStartTraining = { viewModel.dispatch(TrainingAction.StartTraining) },
                         )
                     }
                 }

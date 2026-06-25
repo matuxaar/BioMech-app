@@ -19,6 +19,7 @@ kotlin {
         commonMain.dependencies {
             api(project(":feature:training:training-domain"))
             implementation(project(":domain"))
+            implementation(project(":core:mvi"))
             implementation(project(":core:base"))
             implementation(project(":core:common"))
             implementation(libs.kotlinx.coroutines.core)

@@ -19,6 +19,7 @@ kotlin {
         commonMain.dependencies {
             implementation(compose.material3)
             implementation(compose.foundation)
+            implementation(project(":core:mvi"))
             implementation(project(":core:common"))
             implementation(project(":core:navigation"))
             implementation(project(":feature:auth:auth-domain"))

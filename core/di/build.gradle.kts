@@ -20,6 +20,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(project(":core:common"))
+            implementation(project(":core:mvi"))
             implementation(project(":core:network"))
             implementation(project(":core:ble"))
             implementation(project(":core:storage"))

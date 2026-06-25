@@ -18,6 +18,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(project(":feature:devices:devices-domain"))
+            implementation(project(":core:mvi"))
             implementation(project(":core:base"))
             implementation(project(":core:ble"))
             implementation(libs.kotlinx.coroutines.core)

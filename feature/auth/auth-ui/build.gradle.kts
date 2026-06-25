@@ -18,6 +18,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(project(":feature:auth:auth-domain"))
+            implementation(project(":core:mvi"))
             implementation(project(":core:base"))
             implementation(project(":core:common"))
             implementation(libs.kotlinx.coroutines.core)

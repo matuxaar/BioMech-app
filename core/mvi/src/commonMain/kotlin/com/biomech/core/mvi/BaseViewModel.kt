@@ -21,7 +21,7 @@ abstract class BaseViewModel<S : BaseState, A : BaseAction, E : BaseEvent> {
     protected abstract val _event: Channel<E>
     val event = _event.receiveAsFlow()
 
-    protected abstract fun handleAction(action: A)
+    protected abstract suspend fun handleAction(action: A)
 
     fun dispatch(action: A) {
         scope.launch {
