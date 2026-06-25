@@ -70,7 +70,7 @@ class AuthRepositoryImpl(
 
     private suspend fun syncUser() {
         try {
-            createHttpClient().post("auth/firebase")
+            createHttpClient().post("/api/v1/auth/firebase")
         } catch (_: Exception) { }
     }
 

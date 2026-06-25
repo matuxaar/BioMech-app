@@ -9,12 +9,12 @@ class TrainingApi {
     private val client = createHttpClient()
 
     suspend fun createJob(request: CreateTrainingJobRequest): TrainingJobDto {
-        return client.post("training/jobs") {
+        return client.post("/api/v1/training/jobs") {
             setBody(request)
         }.body()
     }
 
     suspend fun getJobs(): List<TrainingJobDto> {
-        return client.get("training/jobs").body()
+        return client.get("/api/v1/training/jobs").body()
     }
 }
