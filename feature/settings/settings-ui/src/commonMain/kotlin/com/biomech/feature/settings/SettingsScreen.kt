@@ -11,6 +11,7 @@ fun SettingsScreen(
     serverUrl: String,
     onServerUrlChange: (String) -> Unit,
     onLogout: () -> Unit,
+    onTestConnection: () -> Unit = {},
 ) {
     var showLogoutDialog by remember { mutableStateOf(false) }
 
@@ -78,6 +79,13 @@ fun SettingsScreen(
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
+                    Spacer(Modifier.height(12.dp))
+                    Button(
+                        onClick = onTestConnection,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text("Test Connection")
+                    }
                 }
             }
 
