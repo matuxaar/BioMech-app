@@ -15,6 +15,9 @@ import com.biomech.feature.auth.LoginAction
 import com.biomech.feature.auth.LoginEvent
 import com.biomech.feature.auth.LoginScreen
 import com.biomech.feature.auth.LoginViewModel
+import com.biomech.feature.dashboard.DashboardAction
+import com.biomech.feature.dashboard.DashboardScreen
+import com.biomech.feature.dashboard.DashboardViewModel
 import com.biomech.feature.training.TrainingAction
 import com.biomech.feature.training.TrainingScreen
 import com.biomech.feature.training.TrainingViewModel
@@ -36,7 +39,7 @@ private val healthClient by lazy {
 private suspend fun isApiAvailable(): Boolean {
     return try {
         withTimeout(4_000) {
-            healthClient.get(ApiConfig.baseUrl)
+            healthClient.get(ApiConfig.healthUrl)
             true
         }
     } catch (_: Exception) {
@@ -104,14 +107,29 @@ fun App() {
                         MainScreen(isOffline = startupState == AppStartupState.Offline)
                     }
 
+                    Screen.Dashboard -> {
+                        val viewModel: DashboardViewModel = koinInject()
+                        val state by viewModel.state.collectAsState()
+
+                        DashboardScreen(
+                            deviceConnected = state.deviceConnected,
+                            emgData = state.emgData,
+                            onStartRecording = { viewModel.dispatch(DashboardAction.StartRecording) },
+                            onStopRecording = { viewModel.dispatch(DashboardAction.StopRecording) },
+                            onNavigateToTraining = { navigator.navigateTo(Screen.Training) },
+                        )
+                    }
+
                     Screen.Training -> {
                         val viewModel: TrainingViewModel = koinInject()
                         val state by viewModel.state.collectAsState()
 
                         TrainingScreen(
                             jobs = state.jobs,
-                            sessionLabels = state.sessionLabels,
-                            selectedSessions = state.selectedSessions,
+                            sessions = state.sessions,
+                            selectedSessionIds = state.selectedSessionIds,
+                            isCreating = state.isCreating,
+                            error = state.error,
                             onToggleSession = { viewModel.dispatch(TrainingAction.ToggleSession(it)) },
                             onStartTraining = { viewModel.dispatch(TrainingAction.StartTraining) },
                         )
