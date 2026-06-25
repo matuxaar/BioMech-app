@@ -26,7 +26,7 @@ val viewModelsModule: Module = module {
     factory { HomeViewModel(get()) }
     factory { ProfileViewModel(get()) }
     factory { SettingsViewModel(get()) }
-    factory { DevicesViewModel(get()) }
+    factory { DevicesViewModel(get(), get()) }
     factory { TrainingViewModel(get(), get()) }
 }
 

@@ -13,6 +13,7 @@ import com.biomech.domain.model.DeviceType
 import com.biomech.feature.devices.AddDeviceBottomSheet
 import com.biomech.feature.devices.DeviceDetailSheet
 import com.biomech.feature.devices.DevicesAction
+import com.biomech.feature.devices.DevicesEvent
 import com.biomech.feature.devices.DevicesViewModel
 import com.biomech.feature.home.HomeAction
 import com.biomech.feature.home.HomeViewModel
@@ -82,6 +83,16 @@ fun MainScreen(isOffline: Boolean = false) {
                 }
             }
         }
+        launch {
+            devicesViewModel.event.collect { event ->
+                when (event) {
+                    DevicesEvent.DeviceCreated -> {
+                        showAddDeviceSheet = false
+                        homeViewModel.dispatch(HomeAction.LoadDevices)
+                    }
+                }
+            }
+        }
     }
 
     if (showAddDeviceSheet) {
@@ -91,11 +102,16 @@ fun MainScreen(isOffline: Boolean = false) {
             AddDeviceBottomSheet(
                 scannedDevices = devicesState.scannedDevices,
                 isScanning = devicesState.isScanning,
+                isCreating = devicesState.isCreating,
+                createError = devicesState.createError,
                 onStartScan = { devicesViewModel.dispatch(DevicesAction.StartScan) },
                 onStopScan = { devicesViewModel.dispatch(DevicesAction.StopScan) },
                 onConnect = { deviceId ->
                     devicesViewModel.dispatch(DevicesAction.Connect(deviceId))
                     showAddDeviceSheet = false
+                },
+                onCreateDevice = { name, type, hwVersion ->
+                    devicesViewModel.dispatch(DevicesAction.CreateDevice(name, type, hwVersion))
                 },
                 onDismiss = { showAddDeviceSheet = false },
             )
