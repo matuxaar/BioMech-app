@@ -154,18 +154,16 @@ fun MainScreen(isOffline: Boolean = false) {
             ) {
                 Surface(
                     modifier = Modifier
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                        .padding(horizontal = 24.dp, vertical = 4.dp)
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(28.dp)),
-                    shape = RoundedCornerShape(28.dp),
+                        .clip(RoundedCornerShape(20.dp)),
+                    shape = RoundedCornerShape(20.dp),
                     color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.85f),
                     tonalElevation = 8.dp,
                     shadowElevation = 12.dp,
                 ) {
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp),
+                        modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceEvenly,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
@@ -201,7 +199,8 @@ fun MainScreen(isOffline: Boolean = false) {
             }
         }
     ) { padding ->
-        when (selectedTab) {
+        Box(modifier = Modifier.fillMaxSize().padding(padding)) {
+            when (selectedTab) {
             BottomTab.HOME -> {
                 HomeScreen(
                     devices = if (isOffline) offlineDevices else homeState.devices,
@@ -226,6 +225,7 @@ fun MainScreen(isOffline: Boolean = false) {
                     },
                 )
             }
+        }
         }
     }
 }
