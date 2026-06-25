@@ -1,5 +1,7 @@
 package com.biomech.app
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -7,6 +9,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.biomech.core.navigation.LocalNavigator
 import com.biomech.core.navigation.Screen
@@ -149,15 +153,14 @@ fun MainScreen(isOffline: Boolean = false) {
         },
         bottomBar = {
             Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 80.dp)
-                    .padding(bottom = 20.dp),
+                modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.BottomCenter
             ) {
                 Surface(
                     modifier = Modifier
-                        .fillMaxWidth()
+                        .navigationBarsPadding()
+                        .padding(bottom = 20.dp)
+                        .widthIn(max = 220.dp)
                         .clip(RoundedCornerShape(24.dp)),
                     shape = RoundedCornerShape(24.dp),
                     color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.88f),
@@ -165,36 +168,29 @@ fun MainScreen(isOffline: Boolean = false) {
                     shadowElevation = 12.dp,
                 ) {
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 4.dp, vertical = 6.dp),
                         horizontalArrangement = Arrangement.SpaceEvenly,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        NavigationBarItem(
+                        BottomTabItem(
                             selected = selectedTab == BottomTab.HOME,
                             onClick = { selectedTab = BottomTab.HOME },
-                            icon = { Text("🏠") },
-                            label = { Text("Home") },
-                            colors = NavigationBarItemDefaults.colors(
-                                indicatorColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f),
-                            ),
+                            emoji = "🏠",
+                            label = "Home",
                         )
-                        NavigationBarItem(
+                        BottomTabItem(
                             selected = selectedTab == BottomTab.PROFILE,
                             onClick = { selectedTab = BottomTab.PROFILE },
-                            icon = { Text("👤") },
-                            label = { Text("Profile") },
-                            colors = NavigationBarItemDefaults.colors(
-                                indicatorColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f),
-                            ),
+                            emoji = "👤",
+                            label = "Profile",
                         )
-                        NavigationBarItem(
+                        BottomTabItem(
                             selected = selectedTab == BottomTab.SETTINGS,
                             onClick = { selectedTab = BottomTab.SETTINGS },
-                            icon = { Text("⚙️") },
-                            label = { Text("Settings") },
-                            colors = NavigationBarItemDefaults.colors(
-                                indicatorColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f),
-                            ),
+                            emoji = "⚙️",
+                            label = "Settings",
                         )
                     }
                 }
@@ -229,5 +225,33 @@ fun MainScreen(isOffline: Boolean = false) {
             }
         }
         }
+    }
+}
+
+@Composable
+private fun BottomTabItem(
+    selected: Boolean,
+    onClick: () -> Unit,
+    emoji: String,
+    label: String,
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .clickable(onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = 2.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(
+                if (selected) MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f)
+                else Color.Transparent
+            )
+            .padding(horizontal = 8.dp, vertical = 4.dp)
+    ) {
+        Text(emoji, style = MaterialTheme.typography.titleMedium)
+        Text(
+            label,
+            style = MaterialTheme.typography.labelSmall,
+            textAlign = TextAlign.Center,
+        )
     }
 }
