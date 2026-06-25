@@ -52,8 +52,10 @@ fun App() {
     val navigator = remember { Navigator() }
     val authRepo: AuthRepository = koinInject()
     var startupState by remember { mutableStateOf<AppStartupState>(AppStartupState.Loading) }
+    var restartTrigger by remember { mutableStateOf(0) }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(restartTrigger) {
+        startupState = AppStartupState.Loading
         val apiUp = isApiAvailable()
         if (!apiUp) {
             startupState = AppStartupState.Offline
@@ -62,6 +64,7 @@ fun App() {
         }
         val token = authRepo.getToken()
         if (token != null) {
+            ApiConfig.token = token
             navigator.navigateAndClear(Screen.Main)
         }
         startupState = AppStartupState.Ready
@@ -104,7 +107,12 @@ fun App() {
                     }
 
                     Screen.Main -> {
-                        MainScreen(isOffline = startupState == AppStartupState.Offline)
+                        MainScreen(
+                            isOffline = startupState == AppStartupState.Offline,
+                            onConnectionRestored = {
+                                restartTrigger++
+                            },
+                        )
                     }
 
                     Screen.Dashboard -> {

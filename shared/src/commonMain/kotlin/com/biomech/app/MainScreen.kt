@@ -49,7 +49,10 @@ private val offlineDevices = listOf(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(isOffline: Boolean = false) {
+fun MainScreen(
+    isOffline: Boolean = false,
+    onConnectionRestored: (() -> Unit)? = null,
+) {
     val navigator = LocalNavigator.current
     var selectedTab by remember { mutableStateOf(BottomTab.HOME) }
     var showAddDeviceSheet by remember { mutableStateOf(false) }
@@ -94,6 +97,7 @@ fun MainScreen(isOffline: Boolean = false) {
             settingsViewModel.event.collect { event ->
                 when (event) {
                     SettingsEvent.NavigateToLogin -> navigator.navigateAndClear(Screen.Login)
+                    SettingsEvent.ConnectionRestored -> onConnectionRestored?.invoke()
                 }
             }
         }
@@ -308,6 +312,9 @@ fun MainScreen(isOffline: Boolean = false) {
                         onServerUrlChange = { settingsViewModel.dispatch(SettingsAction.UpdateServerUrl(it)) },
                         onLogout = {
                             settingsViewModel.dispatch(SettingsAction.Logout)
+                        },
+                        onTestConnection = {
+                            settingsViewModel.dispatch(SettingsAction.TestConnection)
                         },
                     )
                 }

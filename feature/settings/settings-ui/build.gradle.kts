@@ -19,6 +19,7 @@ kotlin {
             implementation(project(":feature:auth:auth-domain"))
             implementation(project(":core:mvi"))
             implementation(project(":core:base"))
+            implementation(project(":core:network"))
             implementation(libs.kotlinx.coroutines.core)
             implementation(compose.runtime)
             implementation(compose.foundation)
