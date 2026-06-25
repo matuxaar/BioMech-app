@@ -18,6 +18,7 @@ data class HomeState(
 
 sealed class HomeAction : BaseAction {
     data object LoadDevices : HomeAction()
+    data class DeleteDevice(val deviceId: String) : HomeAction()
 }
 
 sealed class HomeEvent : BaseEvent
@@ -32,6 +33,7 @@ class HomeViewModel(
     override suspend fun handleAction(action: HomeAction) {
         when (action) {
             HomeAction.LoadDevices -> loadDevices()
+            is HomeAction.DeleteDevice -> deleteDevice(action.deviceId)
         }
     }
 
@@ -43,6 +45,15 @@ class HomeViewModel(
             }
             is AppResult.Error -> {
                 _state.value = HomeState(error = result.message)
+            }
+        }
+    }
+
+    private suspend fun deleteDevice(id: String) {
+        when (val result = deviceRepository.deleteDevice(id)) {
+            is AppResult.Success -> loadDevices()
+            is AppResult.Error -> {
+                _state.value = _state.value.copy(error = result.message)
             }
         }
     }
