@@ -20,6 +20,7 @@ kotlin {
             implementation(project(":core:mvi"))
             implementation(project(":core:base"))
             implementation(project(":core:common"))
+            implementation(project(":core:validation"))
             implementation(libs.kotlinx.coroutines.core)
             implementation(compose.runtime)
             implementation(compose.foundation)

@@ -9,6 +9,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import com.biomech.core.validation.Validator
+import com.biomech.core.validation.rules.EmailRule
+import com.biomech.core.validation.rules.MatchRule
+import com.biomech.core.validation.rules.PasswordRule
 
 @Composable
 fun LoginScreen(
@@ -20,6 +24,47 @@ fun LoginScreen(
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
+    var isRegisterMode by remember { mutableStateOf(false) }
+
+    val emailValidator = remember { Validator<String>().apply { addRule(EmailRule()) } }
+    val passwordValidator = remember { Validator<String>().apply { addRule(PasswordRule()) } }
+
+    var emailError by remember { mutableStateOf<String?>(null) }
+    var passwordError by remember { mutableStateOf<String?>(null) }
+    var confirmError by remember { mutableStateOf<String?>(null) }
+
+    fun validate(): Boolean {
+        var valid = true
+
+        val emailResult = emailValidator.validate(email)
+        if (emailResult is com.biomech.core.validation.ValidationResult.Invalid) {
+            emailError = emailResult.errors.first()
+            valid = false
+        } else {
+            emailError = null
+        }
+
+        val passwordResult = passwordValidator.validate(password)
+        if (passwordResult is com.biomech.core.validation.ValidationResult.Invalid) {
+            passwordError = passwordResult.errors.first()
+            valid = false
+        } else {
+            passwordError = null
+        }
+
+        if (isRegisterMode) {
+            val matchResult = MatchRule({ confirmPassword }, "Passwords do not match").validate(password)
+            if (matchResult is com.biomech.core.validation.ValidationResult.Invalid) {
+                confirmError = matchResult.errors.first()
+                valid = false
+            } else {
+                confirmError = null
+            }
+        }
+
+        return valid
+    }
 
     Column(
         modifier = Modifier
@@ -38,11 +83,13 @@ fun LoginScreen(
 
         OutlinedTextField(
             value = email,
-            onValueChange = { email = it },
+            onValueChange = { email = it; emailError = null },
             label = { Text("Email") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             singleLine = true,
             enabled = !isLoading,
+            isError = emailError != null,
+            supportingText = emailError?.let { { Text(it) } },
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -50,14 +97,33 @@ fun LoginScreen(
 
         OutlinedTextField(
             value = password,
-            onValueChange = { password = it },
+            onValueChange = { password = it; passwordError = null },
             label = { Text("Password") },
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             singleLine = true,
             enabled = !isLoading,
+            isError = passwordError != null,
+            supportingText = passwordError?.let { { Text(it) } },
             modifier = Modifier.fillMaxWidth()
         )
+
+        if (isRegisterMode) {
+            Spacer(Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = confirmPassword,
+                onValueChange = { confirmPassword = it; confirmError = null },
+                label = { Text("Confirm Password") },
+                visualTransformation = PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                singleLine = true,
+                enabled = !isLoading,
+                isError = confirmError != null,
+                supportingText = confirmError?.let { { Text(it) } },
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
 
         if (error != null) {
             Spacer(Modifier.height(16.dp))
@@ -71,7 +137,11 @@ fun LoginScreen(
         Spacer(Modifier.height(32.dp))
 
         Button(
-            onClick = { onLogin(email, password) },
+            onClick = {
+                if (validate()) {
+                    if (isRegisterMode) onRegister(email, password) else onLogin(email, password)
+                }
+            },
             modifier = Modifier.fillMaxWidth(),
             enabled = !isLoading,
         ) {
@@ -82,16 +152,20 @@ fun LoginScreen(
                 )
                 Spacer(Modifier.width(8.dp))
             }
-            Text("Login")
+            Text(if (isRegisterMode) "Register" else "Login")
         }
 
         Spacer(Modifier.height(8.dp))
 
         TextButton(
-            onClick = { onRegister(email, password) },
+            onClick = {
+                isRegisterMode = !isRegisterMode
+                confirmPassword = ""
+                confirmError = null
+            },
             enabled = !isLoading,
         ) {
-            Text("Register")
+            Text(if (isRegisterMode) "Already have an account? Login" else "Don't have an account? Register")
         }
 
         if (onSkip != null) {
