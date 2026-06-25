@@ -1,34 +1,35 @@
 plugins {
-    id("biomech.kmp.library")
-    alias(libs.plugins.sqldelight)
-}
-
-sqldelight {
-    databases {
-        create("BioMechDatabase") {
-            packageName.set("com.biomech.core.database")
-        }
-    }
+    id("com.android.kotlin.multiplatform.library")
+    kotlin("multiplatform")
+    id("com.google.devtools.ksp")
 }
 
 kotlin {
+    android {
+        namespace = "com.biomech.core.database"
+        compileSdk = 36
+        minSdk = 26
+    }
+    iosArm64()
+    iosSimulatorArm64()
+    compilerOptions {
+        freeCompilerArgs.add("-Xexpect-actual-classes")
+    }
     sourceSets {
         commonMain.dependencies {
             implementation(project(":core:common"))
-            implementation(libs.sqldelight.runtime)
-            implementation(libs.sqldelight.coroutines)
+            implementation(project(":domain"))
+            implementation(libs.room.runtime)
+            implementation(libs.kotlinx.coroutines.core)
         }
-
         androidMain.dependencies {
-            implementation(libs.sqldelight.android)
-        }
-
-        iosMain.dependencies {
-            implementation(libs.sqldelight.native)
+            implementation(libs.room.ktx)
         }
     }
 }
 
-android {
-    namespace = "com.biomech.core.database"
+dependencies {
+    add("kspAndroid", libs.room.compiler)
+    add("kspIosArm64", libs.room.compiler)
+    add("kspIosSimulatorArm64", libs.room.compiler)
 }

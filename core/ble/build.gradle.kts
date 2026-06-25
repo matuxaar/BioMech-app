@@ -1,16 +1,26 @@
 plugins {
-    id("biomech.kmp.library")
+    id("com.android.kotlin.multiplatform.library")
+    kotlin("multiplatform")
 }
 
 kotlin {
+    android {
+        namespace = "com.biomech.core.ble"
+        compileSdk = 36
+        minSdk = 26
+    }
+
+    iosArm64()
+    iosSimulatorArm64()
+
     sourceSets {
         commonMain.dependencies {
             implementation(project(":core:common"))
-            implementation(libs.kotlinx.coroutines)
+            implementation(project(":domain"))
+            implementation(libs.kotlinx.coroutines.core)
+        }
+        androidMain.dependencies {
+            implementation(project(":core:common"))
         }
     }
-}
-
-android {
-    namespace = "com.biomech.core.ble"
 }
