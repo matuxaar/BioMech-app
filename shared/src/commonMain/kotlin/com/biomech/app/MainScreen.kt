@@ -1,5 +1,6 @@
 package com.biomech.app
 
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -200,32 +201,33 @@ fun MainScreen(isOffline: Boolean = false) {
         }
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
-            when (selectedTab) {
-            BottomTab.HOME -> {
-                HomeScreen(
-                    devices = if (isOffline) offlineDevices else homeState.devices,
-                    onAddDevice = { showAddDeviceSheet = true },
-                    onDeviceClick = { device -> selectedDevice = device },
-                )
+            Crossfade(targetState = selectedTab) { tab ->
+                when (tab) {
+                BottomTab.HOME -> {
+                    HomeScreen(
+                        devices = if (isOffline) offlineDevices else homeState.devices,
+                        onAddDevice = { showAddDeviceSheet = true },
+                        onDeviceClick = { device -> selectedDevice = device },
+                        onNavigateToTraining = { navigator.navigateTo(Screen.Training) },
+                    )
+                }
+                BottomTab.PROFILE -> {
+                    ProfileScreen(
+                        email = if (isOffline) "demo@biomech.app" else profileState.email,
+                        deviceCount = (if (isOffline) offlineDevices else homeState.devices).size,
+                    )
+                }
+                BottomTab.SETTINGS -> {
+                    SettingsScreen(
+                        serverUrl = settingsState.serverUrl,
+                        onServerUrlChange = { settingsViewModel.dispatch(SettingsAction.UpdateServerUrl(it)) },
+                        onLogout = {
+                            settingsViewModel.dispatch(SettingsAction.Logout)
+                        },
+                    )
+                }
             }
-            BottomTab.PROFILE -> {
-                ProfileScreen(
-                    email = if (isOffline) "demo@biomech.app" else profileState.email,
-                    onLogout = {
-                        profileViewModel.dispatch(ProfileAction.Logout)
-                    },
-                )
             }
-            BottomTab.SETTINGS -> {
-                SettingsScreen(
-                    serverUrl = settingsState.serverUrl,
-                    onServerUrlChange = { settingsViewModel.dispatch(SettingsAction.UpdateServerUrl(it)) },
-                    onLogout = {
-                        settingsViewModel.dispatch(SettingsAction.Logout)
-                    },
-                )
-            }
-        }
         }
     }
 }
