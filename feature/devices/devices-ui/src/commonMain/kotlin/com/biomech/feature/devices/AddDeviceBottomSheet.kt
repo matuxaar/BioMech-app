@@ -33,7 +33,7 @@ fun AddDeviceBottomSheet(
         modifier = Modifier
             .fillMaxWidth()
             .navigationBarsPadding()
-            .padding(24.dp)
+            .padding(16.dp)
     ) {
         Text(
             "Add New Device",

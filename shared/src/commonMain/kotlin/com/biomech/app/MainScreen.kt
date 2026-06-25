@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.biomech.core.navigation.LocalNavigator
 import com.biomech.core.navigation.Screen
@@ -160,7 +161,7 @@ fun MainScreen(isOffline: Boolean = false) {
                     modifier = Modifier
                         .navigationBarsPadding()
                         .padding(bottom = 20.dp)
-                        .widthIn(max = 220.dp)
+                        .widthIn(max = 280.dp)
                         .clip(RoundedCornerShape(24.dp)),
                     shape = RoundedCornerShape(24.dp),
                     color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.88f),
@@ -239,19 +240,21 @@ private fun BottomTabItem(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .clickable(onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 2.dp)
-            .clip(RoundedCornerShape(12.dp))
+            .padding(horizontal = 8.dp, vertical = 2.dp)
+            .clip(RoundedCornerShape(10.dp))
             .background(
                 if (selected) MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f)
                 else Color.Transparent
             )
-            .padding(horizontal = 8.dp, vertical = 4.dp)
+            .padding(horizontal = 4.dp, vertical = 3.dp)
     ) {
         Text(emoji, style = MaterialTheme.typography.titleMedium)
         Text(
             label,
             style = MaterialTheme.typography.labelSmall,
             textAlign = TextAlign.Center,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
         )
     }
 }
