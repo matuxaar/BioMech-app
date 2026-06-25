@@ -1,4 +1,5 @@
 rootProject.name = "BioMechApp"
+includeBuild("build-logic")
 
 pluginManagement {
     plugins {

@@ -1,6 +1,7 @@
 plugins {
     id("com.android.kotlin.multiplatform.library")
     kotlin("multiplatform")
+    id("com.biomech.gradle.kmp-ios-conventions")
     kotlin("plugin.serialization")
 }
 
@@ -11,8 +12,6 @@ kotlin {
         minSdk = 26
     }
 
-    iosArm64()
-    iosSimulatorArm64()
 
     sourceSets {
         commonMain.dependencies {
