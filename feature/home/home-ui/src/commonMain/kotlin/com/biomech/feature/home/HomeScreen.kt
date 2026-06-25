@@ -47,112 +47,108 @@ fun HomeScreen(
                 HorizontalDivider()
             }
         },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = onAddDevice,
-            ) {
-                Text("+")
-            }
-        }
     ) { padding ->
-        if (devices.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        "No devices yet",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(Modifier.height(8.dp))
-                    Text(
-                        "Tap + to add your first device",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-        } else {
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                items(devices) { device ->
-                    var showMenu by remember { mutableStateOf(false) }
-
-                    Card(
-                        modifier = Modifier
-                            .aspectRatio(1f)
-                            .combinedClickable(
-                                onClick = { onDeviceClick(device) },
-                                onLongClick = { showMenu = true },
-                            ),
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            item(key = "add_device") {
+                Card(
+                    onClick = onAddDevice,
+                    modifier = Modifier.aspectRatio(1f),
+                ) {
+                    Box(
+                        modifier = Modifier.fillMaxSize().padding(16.dp),
+                        contentAlignment = Alignment.Center,
                     ) {
-                        Box(
-                            modifier = Modifier.fillMaxSize().padding(16.dp),
-                            contentAlignment = Alignment.Center,
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center,
                         ) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center,
-                            ) {
-                                Text(
-                                    deviceEmoji(device.type),
-                                    fontSize = 36.sp,
-                                )
-                                Spacer(Modifier.height(10.dp))
-                                Text(
-                                    device.name,
-                                    style = MaterialTheme.typography.titleSmall,
-                                    textAlign = TextAlign.Center,
-                                    maxLines = 2,
-                                    overflow = TextOverflow.Ellipsis,
-                                )
-                                Spacer(Modifier.height(4.dp))
-                                Text(
-                                    device.type.name.lowercase().replaceFirstChar { it.uppercase() },
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    textAlign = TextAlign.Center,
-                                )
-                                Text(
-                                    "v${device.hwVersion}",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    textAlign = TextAlign.Center,
-                                )
-                            }
+                            Text("+", fontSize = 40.sp)
+                            Spacer(Modifier.height(8.dp))
+                            Text(
+                                "New Device",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                textAlign = TextAlign.Center,
+                            )
                         }
                     }
+                }
+            }
 
-                    DropdownMenu(
-                        expanded = showMenu,
-                        onDismissRequest = { showMenu = false },
+            items(devices, key = { it.id }) { device ->
+                var showMenu by remember { mutableStateOf(false) }
+
+                Card(
+                    modifier = Modifier
+                        .aspectRatio(1f)
+                        .combinedClickable(
+                            onClick = { onDeviceClick(device) },
+                            onLongClick = { showMenu = true },
+                        ),
+                ) {
+                    Box(
+                        modifier = Modifier.fillMaxSize().padding(16.dp),
+                        contentAlignment = Alignment.Center,
                     ) {
-                        DropdownMenuItem(
-                            text = { Text("Edit") },
-                            onClick = {
-                                showMenu = false
-                                onEditDevice?.invoke(device)
-                            },
-                        )
-                        DropdownMenuItem(
-                            text = { Text("Delete") },
-                            onClick = {
-                                showMenu = false
-                                onDeleteDevice?.invoke(device)
-                            },
-                        )
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center,
+                        ) {
+                            Text(
+                                deviceEmoji(device.type),
+                                fontSize = 36.sp,
+                            )
+                            Spacer(Modifier.height(10.dp))
+                            Text(
+                                device.name,
+                                style = MaterialTheme.typography.titleSmall,
+                                textAlign = TextAlign.Center,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                device.type.name.lowercase().replaceFirstChar { it.uppercase() },
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                textAlign = TextAlign.Center,
+                            )
+                            Text(
+                                "v${device.hwVersion}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                textAlign = TextAlign.Center,
+                            )
+                        }
                     }
+                }
+
+                DropdownMenu(
+                    expanded = showMenu,
+                    onDismissRequest = { showMenu = false },
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Edit") },
+                        onClick = {
+                            showMenu = false
+                            onEditDevice?.invoke(device)
+                        },
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Delete") },
+                        onClick = {
+                            showMenu = false
+                            onDeleteDevice?.invoke(device)
+                        },
+                    )
                 }
             }
         }
