@@ -2,10 +2,12 @@ package com.biomech.feature.devices
 
 import com.biomech.core.ble.BleDevice
 import com.biomech.core.ble.BleManager
+import com.biomech.core.common.AppResult
 import com.biomech.core.mvi.BaseAction
 import com.biomech.core.mvi.BaseEvent
 import com.biomech.core.mvi.BaseState
 import com.biomech.core.mvi.BaseViewModel
+import com.biomech.domain.repository.DeviceRepository
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -13,18 +15,28 @@ import kotlinx.coroutines.launch
 data class DevicesState(
     val scannedDevices: List<BleDevice> = emptyList(),
     val isScanning: Boolean = false,
+    val isCreating: Boolean = false,
+    val createError: String? = null,
 ) : BaseState
 
 sealed class DevicesAction : BaseAction {
     data object StartScan : DevicesAction()
     data object StopScan : DevicesAction()
     data class Connect(val deviceId: String) : DevicesAction()
+    data class CreateDevice(
+        val name: String,
+        val type: String,
+        val hwVersion: String,
+    ) : DevicesAction()
 }
 
-sealed class DevicesEvent : BaseEvent
+sealed class DevicesEvent : BaseEvent {
+    data object DeviceCreated : DevicesEvent()
+}
 
 class DevicesViewModel(
     private val bleManager: BleManager,
+    private val deviceRepository: DeviceRepository,
 ) : BaseViewModel<DevicesState, DevicesAction, DevicesEvent>() {
 
     override val _state = MutableStateFlow(DevicesState())
@@ -50,6 +62,20 @@ class DevicesViewModel(
             }
             is DevicesAction.Connect -> {
                 bleManager.connect(action.deviceId)
+            }
+            is DevicesAction.CreateDevice -> createDevice(action.name, action.type, action.hwVersion)
+        }
+    }
+
+    private suspend fun createDevice(name: String, type: String, hwVersion: String) {
+        _state.value = _state.value.copy(isCreating = true, createError = null)
+        when (val result = deviceRepository.createDevice(type, name, hwVersion)) {
+            is AppResult.Success -> {
+                _state.value = _state.value.copy(isCreating = false)
+                _event.send(DevicesEvent.DeviceCreated)
+            }
+            is AppResult.Error -> {
+                _state.value = _state.value.copy(isCreating = false, createError = result.message)
             }
         }
     }
