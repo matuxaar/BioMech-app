@@ -188,9 +188,15 @@ fun App() {
                             selectedSessionIds = state.selectedSessionIds,
                             isCreating = state.isCreating,
                             error = state.error,
+                            files = state.files,
+                            isUploading = state.isUploading,
+                            uploadError = state.uploadError,
+                            selectedTab = state.selectedTab,
                             onBack = { navigator.goBack() },
                             onToggleSession = { viewModel.dispatch(TrainingAction.ToggleSession(it)) },
                             onStartTraining = { viewModel.dispatch(TrainingAction.StartTraining) },
+                            onSelectTab = { viewModel.dispatch(TrainingAction.SelectTab(it)) },
+                            onDeleteFile = { viewModel.dispatch(TrainingAction.DeleteFile(it)) },
                         )
                     }
                 }

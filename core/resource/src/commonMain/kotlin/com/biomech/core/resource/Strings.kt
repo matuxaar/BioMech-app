@@ -509,6 +509,62 @@ class Strings(private val locale: Locale) {
         Locale.RU -> "ПРОГНОЗ"
     }
 
+    val record: String get() = when (locale) {
+        Locale.EN -> "Record"
+        Locale.RU -> "Запись"
+    }
+
+    val recordingLabel: String get() = when (locale) {
+        Locale.EN -> "Recording"
+        Locale.RU -> "Идёт запись"
+    }
+
+    val recordingComplete: String get() = when (locale) {
+        Locale.EN -> "Recording complete"
+        Locale.RU -> "Запись завершена"
+    }
+
+    val upload: String get() = when (locale) {
+        Locale.EN -> "Upload"
+        Locale.RU -> "Загрузить"
+    }
+
+    val myFiles: String get() = when (locale) {
+        Locale.EN -> "My Files"
+        Locale.RU -> "Мои файлы"
+    }
+
+    val noFiles: String get() = when (locale) {
+        Locale.EN -> "No training files yet"
+        Locale.RU -> "Пока нет файлов"
+    }
+
+    val saveRecording: String get() = when (locale) {
+        Locale.EN -> "Save Recording"
+        Locale.RU -> "Сохранить запись"
+    }
+
+    val sessions: String get() = when (locale) {
+        Locale.EN -> "Sessions"
+        Locale.RU -> "Сессии"
+    }
+
+    val files: String get() = when (locale) {
+        Locale.EN -> "Files"
+        Locale.RU -> "Файлы"
+    }
+
+    val deleteFile: String get() = when (locale) {
+        Locale.EN -> "Delete File"
+        Locale.RU -> "Удалить файл"
+    }
+
+    fun fileSize(bytes: Long): String = when {
+        bytes < 1024 -> "$bytes B"
+        bytes < 1024 * 1024 -> "${bytes / 1024} KB"
+        else -> "${bytes / (1024 * 1024)} MB"
+    }
+
     fun deviceTypeLabel(type: String): String = when (locale) {
         Locale.EN -> type.lowercase().replaceFirstChar { it.uppercase() }
         Locale.RU -> when (type.lowercase()) {

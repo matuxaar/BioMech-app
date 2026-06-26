@@ -34,15 +34,7 @@ private fun deviceEmoji(type: DeviceType): String = when (type) {
     DeviceType.SENSOR -> "\u2699\uFE0F"
 }
 
-private enum class MenuAction { TRAINING, EDIT, DELETE }
-
-private data class ActionItem(val emoji: String, val action: MenuAction)
-
-private val menuActions = listOf(
-    ActionItem("\uD83C\uDFAF", MenuAction.TRAINING),
-    ActionItem("\u270F\uFE0F", MenuAction.EDIT),
-    ActionItem("\uD83D\uDDD1\uFE0F", MenuAction.DELETE),
-)
+private enum class MenuAction { TRAINING, RECORD, EDIT, DELETE }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -54,6 +46,7 @@ fun HomeScreen(
     onEditDevice: ((Device) -> Unit)? = null,
     onDeleteDevice: ((Device) -> Unit)? = null,
     onNavigateToTraining: ((Device) -> Unit)? = null,
+    onRecord: ((Device) -> Unit)? = null,
 ) {
     Scaffold(
         topBar = {
@@ -92,6 +85,7 @@ fun HomeScreen(
                         onEditDevice = onEditDevice,
                         onDeleteDevice = onDeleteDevice,
                         onNavigateToTraining = onNavigateToTraining,
+                        onRecord = onRecord,
                     )
                 }
             }
@@ -113,6 +107,7 @@ fun HomeScreen(
                         onEditDevice = onEditDevice,
                         onDeleteDevice = onDeleteDevice,
                         onNavigateToTraining = onNavigateToTraining,
+                        onRecord = onRecord,
                     )
                 }
             }
@@ -164,6 +159,21 @@ private fun ListAddCard(onAddDevice: () -> Unit) {
     }
 }
 
+private fun menuActionsForDevice(device: Device): List<Pair<MenuAction, String>> {
+    return when (device.type) {
+        DeviceType.PROSTHETIC -> listOf(
+            MenuAction.TRAINING to "\uD83C\uDFAF",
+            MenuAction.EDIT to "\u270F\uFE0F",
+            MenuAction.DELETE to "\uD83D\uDDD1\uFE0F",
+        )
+        DeviceType.SENSOR -> listOf(
+            MenuAction.RECORD to "\u23FA",
+            MenuAction.EDIT to "\u270F\uFE0F",
+            MenuAction.DELETE to "\uD83D\uDDD1\uFE0F",
+        )
+    }
+}
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun GridDeviceCard(
@@ -172,6 +182,7 @@ private fun GridDeviceCard(
     onEditDevice: ((Device) -> Unit)?,
     onDeleteDevice: ((Device) -> Unit)?,
     onNavigateToTraining: ((Device) -> Unit)?,
+    onRecord: ((Device) -> Unit)?,
 ) {
     var showMenu by remember { mutableStateOf(false) }
     var cardPosition by remember { mutableStateOf(Offset.Zero) }
@@ -225,6 +236,7 @@ private fun GridDeviceCard(
 
     if (showMenu) {
         val density = LocalDensity.current
+        val items = menuActionsForDevice(device)
         Popup(
             onDismissRequest = { showMenu = false },
             properties = PopupProperties(focusable = true),
@@ -237,19 +249,21 @@ private fun GridDeviceCard(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.widthIn(min = 140.dp),
             ) {
-                menuActions.forEach { action ->
+                items.forEach { (action, emoji) ->
                     val onClick: () -> Unit = {
                         showMenu = false
-                        when (action.action) {
+                        when (action) {
                             MenuAction.TRAINING -> onNavigateToTraining?.invoke(device)
+                            MenuAction.RECORD -> onRecord?.invoke(device)
                             MenuAction.EDIT -> onEditDevice?.invoke(device)
                             MenuAction.DELETE -> onDeleteDevice?.invoke(device)
                         }
                     }
                     ActionCard(
-                        emoji = action.emoji,
-                        text = when (action.action) {
+                        emoji = emoji,
+                        text = when (action) {
                             MenuAction.TRAINING -> AppResources.strings.training
+                            MenuAction.RECORD -> AppResources.strings.record
                             MenuAction.EDIT -> AppResources.strings.edit
                             MenuAction.DELETE -> AppResources.strings.delete
                         },
@@ -269,6 +283,7 @@ private fun ListDeviceCard(
     onEditDevice: ((Device) -> Unit)?,
     onDeleteDevice: ((Device) -> Unit)?,
     onNavigateToTraining: ((Device) -> Unit)?,
+    onRecord: ((Device) -> Unit)?,
 ) {
     var showMenu by remember { mutableStateOf(false) }
     var cardPosition by remember { mutableStateOf(Offset.Zero) }
@@ -310,6 +325,46 @@ private fun ListDeviceCard(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+            }
+        }
+    }
+
+    if (showMenu) {
+        val density = LocalDensity.current
+        val items = menuActionsForDevice(device)
+        Popup(
+            onDismissRequest = { showMenu = false },
+            properties = PopupProperties(focusable = true),
+            offset = IntOffset(
+                x = (cardPosition.x + cardWidth + with(density) { 4.dp.toPx() }).toInt(),
+                y = cardPosition.y.toInt(),
+            ),
+        ) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.widthIn(min = 140.dp),
+            ) {
+                items.forEach { (action, emoji) ->
+                    val onClick: () -> Unit = {
+                        showMenu = false
+                        when (action) {
+                            MenuAction.TRAINING -> onNavigateToTraining?.invoke(device)
+                            MenuAction.RECORD -> onRecord?.invoke(device)
+                            MenuAction.EDIT -> onEditDevice?.invoke(device)
+                            MenuAction.DELETE -> onDeleteDevice?.invoke(device)
+                        }
+                    }
+                    ActionCard(
+                        emoji = emoji,
+                        text = when (action) {
+                            MenuAction.TRAINING -> AppResources.strings.training
+                            MenuAction.RECORD -> AppResources.strings.record
+                            MenuAction.EDIT -> AppResources.strings.edit
+                            MenuAction.DELETE -> AppResources.strings.delete
+                        },
+                        onClick = onClick,
+                    )
+                }
             }
         }
     }

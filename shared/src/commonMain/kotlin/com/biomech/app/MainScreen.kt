@@ -31,6 +31,7 @@ import com.biomech.feature.devices.EditDeviceBottomSheet
 import com.biomech.feature.home.HomeAction
 import com.biomech.feature.home.HomeViewModel
 import com.biomech.feature.home.HomeScreen
+import com.biomech.feature.home.RecordBottomSheet
 import com.biomech.feature.profile.ProfileAction
 import com.biomech.feature.profile.ProfileEvent
 import com.biomech.feature.profile.ProfileScreen
@@ -80,6 +81,8 @@ fun MainScreen(
     var showDeleteDialog by remember { mutableStateOf(false) }
     var deletingDevice by remember { mutableStateOf<Device?>(null) }
     var settingsSubScreen by remember { mutableStateOf<SettingsSubScreen?>(null) }
+    var showRecordSheet by remember { mutableStateOf(false) }
+    var recordingDevice by remember { mutableStateOf<Device?>(null) }
 
     val homeViewModel: HomeViewModel = koinInject()
     val homeState by homeViewModel.state.collectAsState()
@@ -253,6 +256,30 @@ fun MainScreen(
         }
     }
 
+    recordingDevice?.let { device ->
+        if (showRecordSheet) {
+            ModalBottomSheet(
+                onDismissRequest = {
+                    showRecordSheet = false
+                    recordingDevice = null
+                },
+            ) {
+                RecordBottomSheet(
+                    device = device,
+                    onDismiss = {
+                        showRecordSheet = false
+                        recordingDevice = null
+                    },
+                    onSave = { label, csvBytes ->
+                        showRecordSheet = false
+                        recordingDevice = null
+                        // TODO: store recording for upload via TrainingScreen Files tab
+                    },
+                )
+            }
+        }
+    }
+
     Scaffold(
         topBar = {
             if (isOffline) {
@@ -271,51 +298,7 @@ fun MainScreen(
                 }
             }
         },
-        bottomBar = {
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.BottomCenter
-            ) {
-                Surface(
-                    modifier = Modifier
-                        .navigationBarsPadding()
-                        .padding(bottom = 20.dp)
-                        .widthIn(max = 280.dp)
-                        .clip(RoundedCornerShape(24.dp)),
-                    shape = RoundedCornerShape(24.dp),
-                    color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.88f),
-                    tonalElevation = 8.dp,
-                    shadowElevation = 12.dp,
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 4.dp, vertical = 6.dp),
-                        horizontalArrangement = Arrangement.SpaceEvenly,
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        BottomTabItem(
-                            selected = selectedTab == BottomTab.HOME,
-                            onClick = { selectedTab = BottomTab.HOME },
-                            emoji = "🏠",
-                            label = AppResources.strings.home,
-                        )
-                        BottomTabItem(
-                            selected = selectedTab == BottomTab.PROFILE,
-                            onClick = { selectedTab = BottomTab.PROFILE },
-                            emoji = "👤",
-                            label = AppResources.strings.profile,
-                        )
-                        BottomTabItem(
-                            selected = selectedTab == BottomTab.SETTINGS,
-                            onClick = { selectedTab = BottomTab.SETTINGS },
-                            emoji = "⚙️",
-                            label = AppResources.strings.settings,
-                        )
-                    }
-                }
-            }
-        }
+        bottomBar = {}
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
             Crossfade(targetState = selectedTab) { tab ->
@@ -334,6 +317,10 @@ fun MainScreen(
                         onDeleteDevice = { device ->
                             deletingDevice = device
                             showDeleteDialog = true
+                        },
+                        onRecord = { device ->
+                            recordingDevice = device
+                            showRecordSheet = true
                         },
                     )
                 }
@@ -390,6 +377,47 @@ fun MainScreen(
                     }
                 }
             }
+            }
+
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.BottomCenter,
+            ) {
+                Surface(
+                    modifier = Modifier
+                        .padding(bottom = 4.dp)
+                        .widthIn(max = 280.dp)
+                        .clip(RoundedCornerShape(24.dp)),
+                    shape = RoundedCornerShape(24.dp),
+                    color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.7f),
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 4.dp, vertical = 6.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        BottomTabItem(
+                            selected = selectedTab == BottomTab.HOME,
+                            onClick = { selectedTab = BottomTab.HOME },
+                            emoji = "🏠",
+                            label = AppResources.strings.home,
+                        )
+                        BottomTabItem(
+                            selected = selectedTab == BottomTab.PROFILE,
+                            onClick = { selectedTab = BottomTab.PROFILE },
+                            emoji = "👤",
+                            label = AppResources.strings.profile,
+                        )
+                        BottomTabItem(
+                            selected = selectedTab == BottomTab.SETTINGS,
+                            onClick = { selectedTab = BottomTab.SETTINGS },
+                            emoji = "⚙️",
+                            label = AppResources.strings.settings,
+                        )
+                    }
+                }
             }
         }
     }

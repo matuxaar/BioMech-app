@@ -16,3 +16,12 @@ data class TrainingJobDto(
     val accuracy: Double,
     val created_at: String,
 )
+
+@Serializable
+data class TrainingFileDto(
+    val id: String,
+    val original_name: String,
+    val file_size: Long,
+    val label: String = "",
+    val created_at: String,
+)

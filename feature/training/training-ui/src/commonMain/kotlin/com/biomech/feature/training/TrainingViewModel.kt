@@ -6,6 +6,7 @@ import com.biomech.core.mvi.BaseEvent
 import com.biomech.core.mvi.BaseState
 import com.biomech.core.mvi.BaseViewModel
 import com.biomech.domain.model.EMGSession
+import com.biomech.domain.model.TrainingFile
 import com.biomech.domain.model.TrainingJob
 import com.biomech.domain.repository.EMGRepository
 import com.biomech.domain.repository.TrainingRepository
@@ -19,15 +20,24 @@ data class TrainingState(
     val selectedSessionIds: Set<String> = emptySet(),
     val isCreating: Boolean = false,
     val error: String? = null,
+    val files: List<TrainingFile> = emptyList(),
+    val isUploading: Boolean = false,
+    val uploadError: String? = null,
+    val selectedTab: Int = 0,
 ) : BaseState
 
 sealed class TrainingAction : BaseAction {
     data class ToggleSession(val sessionId: String) : TrainingAction()
     data object StartTraining : TrainingAction()
+    data class UploadFile(val deviceId: String, val label: String, val fileBytes: ByteArray, val fileName: String) : TrainingAction()
+    data object LoadFiles : TrainingAction()
+    data class DeleteFile(val fileId: String) : TrainingAction()
+    data class SelectTab(val index: Int) : TrainingAction()
 }
 
 sealed class TrainingEvent : BaseEvent {
     data object TrainingCreated : TrainingEvent()
+    data object FileUploaded : TrainingEvent()
 }
 
 class TrainingViewModel(
@@ -46,10 +56,12 @@ class TrainingViewModel(
         scope.launch {
             val sessions = emgRepository.getSessions()
             val jobs = trainingRepository.getJobs()
+            val files = trainingRepository.getFiles()
 
             _state.value = _state.value.copy(
                 sessions = sessions.getOrNull() ?: emptyList(),
                 jobs = jobs.getOrNull() ?: emptyList(),
+                files = files.getOrNull() ?: emptyList(),
             )
         }
     }
@@ -79,6 +91,36 @@ class TrainingViewModel(
                         _state.value = _state.value.copy(isCreating = false, error = result.message)
                     }
                 }
+            }
+            is TrainingAction.UploadFile -> {
+                _state.value = _state.value.copy(isUploading = true, uploadError = null)
+                when (val result = trainingRepository.uploadFile(action.deviceId, action.label, action.fileBytes, action.fileName)) {
+                    is AppResult.Success -> {
+                        _state.value = _state.value.copy(isUploading = false)
+                        loadData()
+                        _event.send(TrainingEvent.FileUploaded)
+                    }
+                    is AppResult.Error -> {
+                        _state.value = _state.value.copy(isUploading = false, uploadError = result.message)
+                    }
+                }
+            }
+            TrainingAction.LoadFiles -> {
+                when (val result = trainingRepository.getFiles()) {
+                    is AppResult.Success -> {
+                        _state.value = _state.value.copy(files = result.data)
+                    }
+                    is AppResult.Error -> {}
+                }
+            }
+            is TrainingAction.DeleteFile -> {
+                when (trainingRepository.deleteFile(action.fileId)) {
+                    is AppResult.Success -> loadData()
+                    is AppResult.Error -> {}
+                }
+            }
+            is TrainingAction.SelectTab -> {
+                _state.value = _state.value.copy(selectedTab = action.index)
             }
         }
     }

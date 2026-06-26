@@ -3,6 +3,7 @@ package com.biomech.core.network.repository
 import com.biomech.core.common.AppResult
 import com.biomech.core.network.api.TrainingApi
 import com.biomech.core.network.dto.CreateTrainingJobRequest
+import com.biomech.domain.model.TrainingFile
 import com.biomech.domain.model.TrainingJob
 import com.biomech.domain.model.TrainingStatus
 import com.biomech.domain.repository.TrainingRepository
@@ -33,6 +34,33 @@ open class TrainingRepositoryImpl(
         }
     }
 
+    override suspend fun uploadFile(deviceId: String, label: String, fileBytes: ByteArray, fileName: String): AppResult<TrainingFile> {
+        return try {
+            val dto = trainingApi.uploadFile(deviceId, label, fileBytes, fileName)
+            AppResult.Success(dto.toDomain())
+        } catch (e: Exception) {
+            AppResult.Error(e.message ?: "Failed to upload file")
+        }
+    }
+
+    override suspend fun getFiles(): AppResult<List<TrainingFile>> {
+        return try {
+            val dtos = trainingApi.getFiles()
+            AppResult.Success(dtos.map { it.toDomain() })
+        } catch (e: Exception) {
+            AppResult.Error(e.message ?: "Failed to fetch files")
+        }
+    }
+
+    override suspend fun deleteFile(id: String): AppResult<Unit> {
+        return try {
+            trainingApi.deleteFile(id)
+            AppResult.Success(Unit)
+        } catch (e: Exception) {
+            AppResult.Error(e.message ?: "Failed to delete file")
+        }
+    }
+
     protected open suspend fun afterJobCreated(job: TrainingJob) {}
     protected open suspend fun afterJobsFetched(jobs: List<TrainingJob>) {}
     protected open suspend fun getCachedJobs(): AppResult<List<TrainingJob>>? = null
@@ -49,4 +77,12 @@ internal fun com.biomech.core.network.dto.TrainingJobDto.toDomain() = TrainingJo
         else -> TrainingStatus.PENDING
     },
     accuracy = accuracy,
+)
+
+internal fun com.biomech.core.network.dto.TrainingFileDto.toDomain() = TrainingFile(
+    id = id,
+    originalName = original_name,
+    fileSize = file_size,
+    label = label,
+    createdAt = created_at,
 )
