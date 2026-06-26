@@ -12,8 +12,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInParent
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
@@ -98,10 +103,16 @@ fun HomeScreen(
 
             items(devices, key = { it.id }) { device ->
                 var showMenu by remember { mutableStateOf(false) }
+                var cardPosition by remember { mutableStateOf(Offset.Zero) }
+                var cardWidth by remember { mutableStateOf(0f) }
 
                 Card(
                     modifier = Modifier
                         .aspectRatio(1f)
+                        .onGloballyPositioned { coords ->
+                            cardPosition = coords.positionInParent()
+                            cardWidth = coords.size.width.toFloat()
+                        }
                         .combinedClickable(
                             onClick = { onDeviceClick(device) },
                             onLongClick = { showMenu = true },
@@ -145,10 +156,14 @@ fun HomeScreen(
                 }
 
                 if (showMenu) {
+                    val density = LocalDensity.current
                     Popup(
                         onDismissRequest = { showMenu = false },
-                        alignment = Alignment.TopEnd,
                         properties = PopupProperties(focusable = true),
+                        offset = IntOffset(
+                            x = (cardPosition.x + cardWidth + with(density) { 4.dp.toPx() }).toInt(),
+                            y = cardPosition.y.toInt(),
+                        ),
                     ) {
                         Column(
                             verticalArrangement = Arrangement.spacedBy(8.dp),
