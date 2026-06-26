@@ -9,6 +9,7 @@ import com.biomech.core.base.theme.BioMechTheme
 import com.biomech.core.navigation.LocalNavigator
 import com.biomech.core.navigation.Navigator
 import com.biomech.core.navigation.Screen
+import com.biomech.core.navigation.SystemBackHandler
 import com.biomech.core.network.ApiConfig
 import com.biomech.domain.repository.AuthRepository
 import com.biomech.feature.auth.LoginAction
@@ -53,6 +54,11 @@ fun App() {
     val authRepo: AuthRepository = koinInject()
     var startupState by remember { mutableStateOf<AppStartupState>(AppStartupState.Loading) }
     var restartTrigger by remember { mutableStateOf(0) }
+
+    SystemBackHandler(
+        enabled = navigator.currentScreen != Screen.Login,
+        onBack = { navigator.goBack() },
+    )
 
     LaunchedEffect(restartTrigger) {
         startupState = AppStartupState.Loading
