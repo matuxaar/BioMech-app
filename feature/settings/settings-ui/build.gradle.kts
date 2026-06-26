@@ -18,6 +18,8 @@ kotlin {
         commonMain.dependencies {
             implementation(project(":feature:auth:auth-domain"))
             implementation(project(":core:mvi"))
+            implementation(project(":core:common"))
+            implementation(project(":core:resource"))
             implementation(project(":core:base"))
             implementation(project(":core:network"))
             implementation(libs.kotlinx.coroutines.core)

@@ -9,6 +9,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.biomech.core.ble.BleDevice
+import com.biomech.core.resource.AppResources
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -21,7 +22,7 @@ fun DevicesScreen(
 ) {
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Devices") })
+            TopAppBar(title = { Text(AppResources.strings.devices) })
         }
     ) { padding ->
         Column(
@@ -38,7 +39,7 @@ fun DevicesScreen(
                     onClick = { if (isScanning) onStopScan() else onStartScan() },
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text(if (isScanning) "Stop Scan" else "Start Scan")
+                    Text(if (isScanning) AppResources.strings.stopScan else AppResources.strings.startScan)
                 }
             }
 
@@ -49,7 +50,7 @@ fun DevicesScreen(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("No devices found", style = MaterialTheme.typography.bodyLarge)
+                    Text(AppResources.strings.noDevicesFound, style = MaterialTheme.typography.bodyLarge)
                 }
             } else {
                 LazyColumn(
@@ -71,7 +72,7 @@ fun DevicesScreen(
                                     Text(device.name, style = MaterialTheme.typography.titleSmall)
                                     Text(device.id, style = MaterialTheme.typography.bodySmall)
                                 }
-                                Text("${device.rssi} dBm")
+                                Text(AppResources.strings.rssi(device.rssi))
                             }
                         }
                     }

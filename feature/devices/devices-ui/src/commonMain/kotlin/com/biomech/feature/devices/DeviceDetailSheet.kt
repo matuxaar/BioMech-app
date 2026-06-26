@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.biomech.core.resource.AppResources
 import com.biomech.domain.model.Device
 import com.biomech.domain.model.DeviceType
 
@@ -21,11 +22,11 @@ private data class Gesture(
 )
 
 private val sampleGestures = listOf(
-    Gesture("Rest", "\u270B", 0.95),
-    Gesture("Fist", "\u270A", 0.92),
-    Gesture("Open", "\uD83D\uDD90\uFE0F", 0.88),
-    Gesture("Pinch", "\uD83E\uDD1F", 0.75),
-    Gesture("Point", "\u261D\uFE0F", 0.70),
+    Gesture(AppResources.strings.gestureRest, "\u270B", 0.95),
+    Gesture(AppResources.strings.gestureFist, "\u270A", 0.92),
+    Gesture(AppResources.strings.gestureOpen, "\uD83D\uDD90\uFE0F", 0.88),
+    Gesture(AppResources.strings.gesturePinch, "\uD83E\uDD1F", 0.75),
+    Gesture(AppResources.strings.gesturePoint, "\u261D\uFE0F", 0.70),
 )
 
 private fun deviceEmoji(type: DeviceType): String = when (type) {
@@ -52,7 +53,7 @@ fun DeviceDetailSheet(
             Text(deviceEmoji(device.type), fontSize = 28.sp)
             Spacer(Modifier.width(12.dp))
             Text(
-                "Device Details",
+                AppResources.strings.deviceDetails,
                 style = MaterialTheme.typography.headlineSmall,
             )
         }
@@ -61,20 +62,20 @@ fun DeviceDetailSheet(
 
         Card(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.padding(16.dp)) {
-                DetailRow("Name", device.name)
+                DetailRow(AppResources.strings.name, device.name)
                 HorizontalDivider(modifier = Modifier.padding(vertical = 10.dp))
-                DetailRow("Type", device.type.name.lowercase().replaceFirstChar { it.uppercase() })
+                DetailRow(AppResources.strings.type, device.type.name.lowercase().replaceFirstChar { it.uppercase() })
                 HorizontalDivider(modifier = Modifier.padding(vertical = 10.dp))
-                DetailRow("Hardware Version", device.hwVersion)
+                DetailRow(AppResources.strings.hardwareVersion, device.hwVersion)
                 HorizontalDivider(modifier = Modifier.padding(vertical = 10.dp))
-                DetailRow("ID", device.id.take(8) + "...")
+                DetailRow(AppResources.strings.id, device.id.take(8) + "...")
             }
         }
 
         Spacer(Modifier.height(24.dp))
 
         Text(
-            "Trained Actions",
+            AppResources.strings.trainedActions,
             style = MaterialTheme.typography.titleMedium,
         )
         Spacer(Modifier.height(12.dp))
@@ -101,7 +102,7 @@ fun DeviceDetailSheet(
             onClick = onDismiss,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Close")
+            Text(AppResources.strings.close)
         }
     }
 }
@@ -130,7 +131,7 @@ private fun GestureCard(
                 )
                 if (gesture.accuracy != null) {
                     Text(
-                        "${(gesture.accuracy * 100).toInt()}% accuracy",
+                        AppResources.strings.accuracy((gesture.accuracy * 100).toInt()),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )

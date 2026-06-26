@@ -8,6 +8,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.biomech.core.resource.AppResources
 import com.biomech.domain.model.EMGSession
 import com.biomech.domain.model.TrainingJob
 
@@ -26,7 +27,7 @@ fun TrainingScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Training") },
+                title = { Text(AppResources.strings.trainingTitle) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Text("<")
@@ -43,7 +44,7 @@ fun TrainingScreen(
         ) {
             if (sessions.isNotEmpty()) {
                 Text(
-                    text = "Select sessions for training:",
+                    text = AppResources.strings.selectSessions,
                     style = MaterialTheme.typography.titleMedium
                 )
                 Spacer(Modifier.height(8.dp))
@@ -81,7 +82,7 @@ fun TrainingScreen(
                     if (isCreating) {
                         CircularProgressIndicator(modifier = Modifier.size(20.dp))
                     } else {
-                        Text("Start Training")
+                        Text(AppResources.strings.startTraining)
                     }
                 }
             }
@@ -92,7 +93,7 @@ fun TrainingScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        "No sessions available",
+                        AppResources.strings.noSessions,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
@@ -101,7 +102,7 @@ fun TrainingScreen(
             Spacer(Modifier.height(24.dp))
 
             Text(
-                text = "Training History",
+                text = AppResources.strings.trainingHistory,
                 style = MaterialTheme.typography.titleMedium
             )
             Spacer(Modifier.height(8.dp))
@@ -111,7 +112,7 @@ fun TrainingScreen(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("No training jobs yet")
+                    Text(AppResources.strings.noTrainingJobs)
                 }
             } else {
                 LazyColumn(
@@ -121,12 +122,12 @@ fun TrainingScreen(
                         Card(modifier = Modifier.fillMaxWidth()) {
                             Column(modifier = Modifier.padding(16.dp)) {
                                 Text(
-                                    text = "Job ${job.id.take(8)}",
+                                    text = AppResources.strings.jobId(job.id),
                                     style = MaterialTheme.typography.titleSmall
                                 )
-                                Text("Status: ${job.status.name}")
+                                Text(AppResources.strings.status(job.status.name))
                                 if (job.accuracy > 0) {
-                                    Text("Accuracy: ${(job.accuracy * 100).toInt()}%")
+                                    Text(AppResources.strings.jobAccuracy((job.accuracy * 100).toInt()))
                                 }
                             }
                         }

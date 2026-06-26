@@ -15,8 +15,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.biomech.core.common.ThemeMode
 import com.biomech.core.navigation.LocalNavigator
 import com.biomech.core.navigation.Screen
+import com.biomech.core.resource.AppResources
+import com.biomech.core.resource.Locale
 import com.biomech.domain.model.Device
 import com.biomech.domain.model.DeviceType
 import com.biomech.feature.devices.AddDeviceBottomSheet
@@ -32,6 +35,13 @@ import com.biomech.feature.profile.ProfileAction
 import com.biomech.feature.profile.ProfileEvent
 import com.biomech.feature.profile.ProfileScreen
 import com.biomech.feature.profile.ProfileViewModel
+import com.biomech.feature.settings.AppearanceScreen
+import com.biomech.feature.settings.LanguageScreen
+import com.biomech.feature.settings.PredictionConfigScreen
+import com.biomech.feature.settings.ServerConfigAction
+import com.biomech.feature.settings.ServerConfigEvent
+import com.biomech.feature.settings.ServerConfigScreen
+import com.biomech.feature.settings.ServerConfigViewModel
 import com.biomech.feature.settings.SettingsAction
 import com.biomech.feature.settings.SettingsEvent
 import com.biomech.feature.settings.SettingsScreen
@@ -40,6 +50,8 @@ import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
 enum class BottomTab { HOME, PROFILE, SETTINGS }
+
+enum class SettingsSubScreen { SERVER_CONFIG, APPEARANCE, LANGUAGE, PREDICTION }
 
 private val offlineDevices = listOf(
     Device(id = "dev-1", name = "MyoBand Pro", type = DeviceType.SENSOR, hwVersion = "2.1.0"),
@@ -52,6 +64,12 @@ private val offlineDevices = listOf(
 fun MainScreen(
     isOffline: Boolean = false,
     onConnectionRestored: (() -> Unit)? = null,
+    themeMode: ThemeMode = ThemeMode.SYSTEM,
+    onThemeModeChanged: (ThemeMode) -> Unit = {},
+    useGridLayout: Boolean = true,
+    onGridLayoutChanged: (Boolean) -> Unit = {},
+    locale: Locale = Locale.EN,
+    onLocaleChanged: (Locale) -> Unit = {},
 ) {
     val navigator = LocalNavigator.current
     var selectedTab by remember { mutableStateOf(BottomTab.HOME) }
@@ -61,6 +79,7 @@ fun MainScreen(
     var editingDevice by remember { mutableStateOf<Device?>(null) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     var deletingDevice by remember { mutableStateOf<Device?>(null) }
+    var settingsSubScreen by remember { mutableStateOf<SettingsSubScreen?>(null) }
 
     val homeViewModel: HomeViewModel = koinInject()
     val homeState by homeViewModel.state.collectAsState()
@@ -73,8 +92,14 @@ fun MainScreen(
     val settingsState by settingsViewModel.state.collectAsState()
     val settingsScope = rememberCoroutineScope()
 
+    val serverConfigViewModel: ServerConfigViewModel = koinInject()
+    val serverConfigState by serverConfigViewModel.state.collectAsState()
+
     val devicesViewModel: DevicesViewModel = koinInject()
     val devicesState by devicesViewModel.state.collectAsState()
+
+    var streamingEnabled by remember { mutableStateOf(false) }
+    var streamingConnected by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         if (!isOffline) {
@@ -114,6 +139,17 @@ fun MainScreen(
                     DevicesEvent.DeviceDeleted -> {
                         deletingDevice = null
                         homeViewModel.dispatch(HomeAction.LoadDevices)
+                    }
+                }
+            }
+        }
+        launch {
+            serverConfigViewModel.event.collect { event ->
+                when (event) {
+                    ServerConfigEvent.NavigateBack -> settingsSubScreen = null
+                    ServerConfigEvent.ConnectionRestored -> {
+                        settingsSubScreen = null
+                        onConnectionRestored?.invoke()
                     }
                 }
             }
@@ -190,8 +226,8 @@ fun MainScreen(
                     showDeleteDialog = false
                     deletingDevice = null
                 },
-                title = { Text("Delete Device") },
-                text = { Text("Are you sure you want to delete ${device.name}?") },
+                title = { Text(AppResources.strings.deleteDevice) },
+                text = { Text(AppResources.strings.deleteDeviceConfirm(device.name)) },
                 confirmButton = {
                     TextButton(
                         onClick = {
@@ -202,7 +238,7 @@ fun MainScreen(
                             contentColor = MaterialTheme.colorScheme.error
                         ),
                     ) {
-                        Text("Delete")
+                        Text(AppResources.strings.delete)
                     }
                 },
                 dismissButton = {
@@ -210,7 +246,7 @@ fun MainScreen(
                         showDeleteDialog = false
                         deletingDevice = null
                     }) {
-                        Text("Cancel")
+                        Text(AppResources.strings.cancel)
                     }
                 },
             )
@@ -227,7 +263,7 @@ fun MainScreen(
                         .clickable { selectedTab = BottomTab.SETTINGS },
                 ) {
                     Text(
-                        text = "Offline — tap to configure server",
+                        text = AppResources.strings.offlineTap,
                         modifier = Modifier.padding(8.dp),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onErrorContainer,
@@ -262,19 +298,19 @@ fun MainScreen(
                             selected = selectedTab == BottomTab.HOME,
                             onClick = { selectedTab = BottomTab.HOME },
                             emoji = "🏠",
-                            label = "Home",
+                            label = AppResources.strings.home,
                         )
                         BottomTabItem(
                             selected = selectedTab == BottomTab.PROFILE,
                             onClick = { selectedTab = BottomTab.PROFILE },
                             emoji = "👤",
-                            label = "Profile",
+                            label = AppResources.strings.profile,
                         )
                         BottomTabItem(
                             selected = selectedTab == BottomTab.SETTINGS,
                             onClick = { selectedTab = BottomTab.SETTINGS },
                             emoji = "⚙️",
-                            label = "Settings",
+                            label = AppResources.strings.settings,
                         )
                     }
                 }
@@ -287,6 +323,7 @@ fun MainScreen(
                 BottomTab.HOME -> {
                     HomeScreen(
                         devices = if (isOffline) offlineDevices else homeState.devices,
+                        useGridLayout = useGridLayout,
                         onAddDevice = { showAddDeviceSheet = true },
                         onDeviceClick = { device -> selectedDevice = device },
                         onNavigateToTraining = { navigator.navigateTo(Screen.Training) },
@@ -303,21 +340,54 @@ fun MainScreen(
                 BottomTab.PROFILE -> {
                     ProfileScreen(
                         email = if (isOffline) "demo@biomech.app" else profileState.email,
-                        deviceCount = (if (isOffline) offlineDevices else homeState.devices).size,
+                        nickname = profileState.nickname,
+                        deviceCount = if (isOffline) offlineDevices.size else profileState.deviceCount,
+                        isUpdating = profileState.isUpdating,
+                        updateError = profileState.updateError,
+                        onUpdateNickname = { nickname ->
+                            profileViewModel.dispatch(ProfileAction.UpdateNickname(nickname))
+                        },
                     )
                 }
                 BottomTab.SETTINGS -> {
-                    SettingsScreen(
-                        serverUrl = settingsState.serverUrl,
-                        connectionStatus = settingsState.connectionStatus,
-                        onServerUrlChange = { settingsViewModel.dispatch(SettingsAction.UpdateServerUrl(it)) },
-                        onLogout = {
-                            settingsViewModel.dispatch(SettingsAction.Logout)
-                        },
-                        onTestConnection = {
-                            settingsViewModel.dispatch(SettingsAction.TestConnection)
-                        },
-                    )
+                    when (settingsSubScreen) {
+                        SettingsSubScreen.SERVER_CONFIG -> ServerConfigScreen(
+                            serverUrl = serverConfigState.serverUrl,
+                            connectionStatus = serverConfigState.connectionStatus,
+                            onServerUrlChange = { serverConfigViewModel.dispatch(ServerConfigAction.UpdateServerUrl(it)) },
+                            onTestConnection = { serverConfigViewModel.dispatch(ServerConfigAction.TestConnection) },
+                            onBack = { serverConfigViewModel.dispatch(ServerConfigAction.GoBack) },
+                        )
+                        SettingsSubScreen.APPEARANCE -> AppearanceScreen(
+                            themeMode = themeMode,
+                            onThemeModeChanged = onThemeModeChanged,
+                            useGridLayout = useGridLayout,
+                            onGridLayoutChanged = onGridLayoutChanged,
+                            onBack = { settingsSubScreen = null },
+                        )
+                        SettingsSubScreen.LANGUAGE -> LanguageScreen(
+                            locale = locale,
+                            onLocaleChanged = onLocaleChanged,
+                            onBack = { settingsSubScreen = null },
+                        )
+                        SettingsSubScreen.PREDICTION -> PredictionConfigScreen(
+                            streamingEnabled = streamingEnabled,
+                            streamingConnected = streamingConnected,
+                            onToggleStreaming = { enabled ->
+                                streamingEnabled = enabled
+                            },
+                            onBack = { settingsSubScreen = null },
+                        )
+                        null -> SettingsScreen(
+                            onNavigateToServerConfig = { settingsSubScreen = SettingsSubScreen.SERVER_CONFIG },
+                            onNavigateToAppearance = { settingsSubScreen = SettingsSubScreen.APPEARANCE },
+                            onNavigateToLanguage = { settingsSubScreen = SettingsSubScreen.LANGUAGE },
+                            onNavigateToPrediction = { settingsSubScreen = SettingsSubScreen.PREDICTION },
+                            onLogout = {
+                                settingsViewModel.dispatch(SettingsAction.Logout)
+                            },
+                        )
+                    }
                 }
             }
             }

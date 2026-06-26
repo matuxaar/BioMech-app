@@ -1,5 +1,7 @@
 package com.biomech.core.network.api
 
+import com.biomech.core.network.createHttpClient
+import com.biomech.core.network.dto.*
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.plugins.*
@@ -11,7 +13,6 @@ import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 
 import com.biomech.core.firebase.FirebaseConfig
-import com.biomech.core.network.dto.*
 
 private val FIREBASE_API_KEY get() = FirebaseConfig.API_KEY
 
@@ -45,6 +46,7 @@ private suspend fun HttpResponse.checkFirebaseError(): HttpResponse {
 
 class AuthApi {
     private val client = firebaseClient()
+    private val backendClient = createHttpClient()
 
     suspend fun signInWithPassword(email: String, password: String): FirebaseAuthResponse {
         return client.post("https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword") {
@@ -65,5 +67,15 @@ class AuthApi {
             parameter("key", FIREBASE_API_KEY)
             setBody(FirebaseTokenRefreshRequest(refreshToken, "refresh_token"))
         }.checkFirebaseError().body()
+    }
+
+    suspend fun getProfile(): ProfileDto {
+        return backendClient.get("/api/v1/me").body()
+    }
+
+    suspend fun updateProfile(request: UpdateProfileRequest): ProfileDto {
+        return backendClient.put("/api/v1/me") {
+            setBody(request)
+        }.body()
     }
 }

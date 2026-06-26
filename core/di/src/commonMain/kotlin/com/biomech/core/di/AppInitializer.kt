@@ -14,6 +14,7 @@ import com.biomech.feature.auth.LoginViewModel
 import com.biomech.feature.dashboard.DashboardViewModel
 import com.biomech.feature.home.HomeViewModel
 import com.biomech.feature.profile.ProfileViewModel
+import com.biomech.feature.settings.ServerConfigViewModel
 import com.biomech.feature.settings.SettingsViewModel
 import com.biomech.feature.devices.DevicesViewModel
 import com.biomech.feature.training.TrainingViewModel
@@ -26,6 +27,7 @@ val viewModelsModule: Module = module {
     factory { HomeViewModel(get()) }
     factory { ProfileViewModel(get()) }
     factory { SettingsViewModel(get()) }
+    factory { ServerConfigViewModel() }
     factory { DevicesViewModel(get(), get()) }
     factory { TrainingViewModel(get(), get()) }
 }

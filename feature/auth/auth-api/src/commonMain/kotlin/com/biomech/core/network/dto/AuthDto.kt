@@ -42,3 +42,20 @@ data class FirebaseErrorDetail(
     val code: Int = 0,
     val message: String = "",
 )
+
+@Serializable
+data class ProfileDto(
+    val id: String,
+    val email: String,
+    val nickname: String = "",
+    val display_name: String = "",
+    val photo_url: String = "",
+    val device_count: Int = 0,
+)
+
+@Serializable
+data class UpdateProfileRequest(
+    val nickname: String? = null,
+    val display_name: String? = null,
+    val photo_url: String? = null,
+)

@@ -20,6 +20,7 @@ kotlin {
             api(libs.ktor.client.content.negotiation)
             api(libs.ktor.serialization.json)
             api(libs.ktor.client.auth)
+            implementation(libs.ktor.client.websockets)
             implementation(libs.ktor.client.logging)
             implementation(libs.kotlinx.serialization.json)
         }

@@ -11,8 +11,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.biomech.core.ble.BleDevice
+import com.biomech.core.resource.AppResources
 
-private val deviceTypes = listOf("sensor", "prosthetic")
+private val deviceTypes = listOf(AppResources.strings.sensor, AppResources.strings.prosthetic)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,7 +37,7 @@ fun AddDeviceBottomSheet(
             .padding(16.dp)
     ) {
         Text(
-            "Add New Device",
+            AppResources.strings.addNewDeviceSheet,
             style = MaterialTheme.typography.headlineSmall,
         )
 
@@ -49,13 +50,13 @@ fun AddDeviceBottomSheet(
             FilterChip(
                 selected = mode == "ble",
                 onClick = { mode = "ble" },
-                label = { Text("BLE Scan") },
+                label = { Text(AppResources.strings.bleScan) },
                 modifier = Modifier.weight(1f),
             )
             FilterChip(
                 selected = mode == "manual",
                 onClick = { mode = "manual" },
-                label = { Text("Manual") },
+                label = { Text(AppResources.strings.manual) },
                 modifier = Modifier.weight(1f),
             )
         }
@@ -91,7 +92,7 @@ fun AddDeviceBottomSheet(
             onClick = onDismiss,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Cancel")
+            Text(AppResources.strings.cancel)
         }
     }
 }
@@ -108,7 +109,7 @@ private fun BleScanContent(
         onClick = { if (isScanning) onStopScan() else onStartScan() },
         modifier = Modifier.fillMaxWidth()
     ) {
-        Text(if (isScanning) "Stop Scanning" else "Start Scanning")
+        Text(if (isScanning) AppResources.strings.stopScanning else AppResources.strings.startScanning)
     }
 
     Spacer(Modifier.height(16.dp))
@@ -121,7 +122,7 @@ private fun BleScanContent(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                "Press scan to find nearby devices",
+                AppResources.strings.pressScan,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -149,7 +150,7 @@ private fun BleScanContent(
                             Text(device.name, style = MaterialTheme.typography.titleSmall)
                             Text(device.id, style = MaterialTheme.typography.bodySmall)
                         }
-                        Text("${device.rssi} dBm")
+                        Text(AppResources.strings.rssi(device.rssi))
                     }
                 }
             }
@@ -171,7 +172,7 @@ private fun ManualEntryContent(
     OutlinedTextField(
         value = name,
         onValueChange = { name = it },
-        label = { Text("Device Name") },
+        label = { Text(AppResources.strings.deviceName) },
         singleLine = true,
         enabled = !isCreating,
         modifier = Modifier.fillMaxWidth()
@@ -187,7 +188,7 @@ private fun ManualEntryContent(
             value = selectedType,
             onValueChange = {},
             readOnly = true,
-            label = { Text("Type") },
+            label = { Text(AppResources.strings.type) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = typeExpanded) },
             modifier = Modifier.fillMaxWidth().menuAnchor(),
             enabled = !isCreating,
@@ -213,7 +214,7 @@ private fun ManualEntryContent(
     OutlinedTextField(
         value = hwVersion,
         onValueChange = { hwVersion = it },
-        label = { Text("Hardware Version") },
+        label = { Text(AppResources.strings.hardwareVersion) },
         singleLine = true,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
         enabled = !isCreating,
@@ -234,6 +235,6 @@ private fun ManualEntryContent(
             )
             Spacer(Modifier.width(8.dp))
         }
-        Text("Add Device")
+        Text(AppResources.strings.addDevice)
     }
 }

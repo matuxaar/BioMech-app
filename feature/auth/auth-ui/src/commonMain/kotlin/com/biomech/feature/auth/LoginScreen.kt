@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import com.biomech.core.resource.AppResources
 import com.biomech.core.validation.Validator
 import com.biomech.core.validation.rules.EmailRule
 import com.biomech.core.validation.rules.MatchRule
@@ -54,7 +55,7 @@ fun LoginScreen(
         }
 
         if (isRegisterMode) {
-            val matchResult = MatchRule({ confirmPassword }, "Passwords do not match").validate(password)
+            val matchResult = MatchRule({ confirmPassword }, AppResources.strings.passwordsDoNotMatch).validate(password)
             if (matchResult is com.biomech.core.validation.ValidationResult.Invalid) {
                 confirmError = matchResult.errors.first()
                 valid = false
@@ -74,7 +75,7 @@ fun LoginScreen(
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "BioMech",
+            text = AppResources.strings.appName,
             style = MaterialTheme.typography.headlineLarge,
             color = MaterialTheme.colorScheme.primary
         )
@@ -84,7 +85,7 @@ fun LoginScreen(
         OutlinedTextField(
             value = email,
             onValueChange = { email = it; emailError = null },
-            label = { Text("Email") },
+            label = { Text(AppResources.strings.email) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             singleLine = true,
             enabled = !isLoading,
@@ -98,7 +99,7 @@ fun LoginScreen(
         OutlinedTextField(
             value = password,
             onValueChange = { password = it; passwordError = null },
-            label = { Text("Password") },
+            label = { Text(AppResources.strings.password) },
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             singleLine = true,
@@ -114,7 +115,7 @@ fun LoginScreen(
             OutlinedTextField(
                 value = confirmPassword,
                 onValueChange = { confirmPassword = it; confirmError = null },
-                label = { Text("Confirm Password") },
+                label = { Text(AppResources.strings.confirmPassword) },
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 singleLine = true,
@@ -152,7 +153,7 @@ fun LoginScreen(
                 )
                 Spacer(Modifier.width(8.dp))
             }
-            Text(if (isRegisterMode) "Register" else "Login")
+            Text(if (isRegisterMode) AppResources.strings.register else AppResources.strings.login)
         }
 
         Spacer(Modifier.height(8.dp))
@@ -165,7 +166,7 @@ fun LoginScreen(
             },
             enabled = !isLoading,
         ) {
-            Text(if (isRegisterMode) "Already have an account? Login" else "Don't have an account? Register")
+            Text(if (isRegisterMode) AppResources.strings.alreadyHaveAccount else AppResources.strings.dontHaveAccount)
         }
 
         if (onSkip != null) {
@@ -174,7 +175,7 @@ fun LoginScreen(
                 onClick = onSkip,
             ) {
                 Text(
-                    "Skip — explore offline",
+                    AppResources.strings.skipExplore,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }

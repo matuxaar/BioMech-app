@@ -20,6 +20,7 @@ import com.biomech.feature.dashboard.DashboardViewModel
 import com.biomech.feature.devices.DevicesViewModel
 import com.biomech.feature.home.HomeViewModel
 import com.biomech.feature.profile.ProfileViewModel
+import com.biomech.feature.settings.ServerConfigViewModel
 import com.biomech.feature.settings.SettingsViewModel
 import com.biomech.feature.training.TrainingViewModel
 import org.koin.core.module.Module
@@ -48,6 +49,7 @@ val sharedModule = module {
     factory { ProfileViewModel(get()) }
     factory { TrainingViewModel(get(), get()) }
     factory { SettingsViewModel(get()) }
+    factory { ServerConfigViewModel() }
 }
 
 val appModules = listOf(sharedModule, platformModule)

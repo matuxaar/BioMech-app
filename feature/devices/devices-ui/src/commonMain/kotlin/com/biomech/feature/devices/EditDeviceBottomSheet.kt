@@ -8,6 +8,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.biomech.core.resource.AppResources
 import com.biomech.domain.model.Device
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -29,7 +30,7 @@ fun EditDeviceBottomSheet(
             .padding(16.dp)
     ) {
         Text(
-            "Edit Device",
+            AppResources.strings.editDevice,
             style = MaterialTheme.typography.headlineSmall,
         )
 
@@ -47,7 +48,7 @@ fun EditDeviceBottomSheet(
         OutlinedTextField(
             value = name,
             onValueChange = { name = it },
-            label = { Text("Device Name") },
+            label = { Text(AppResources.strings.deviceName) },
             singleLine = true,
             enabled = !isUpdating,
             modifier = Modifier.fillMaxWidth(),
@@ -58,7 +59,7 @@ fun EditDeviceBottomSheet(
         OutlinedTextField(
             value = hwVersion,
             onValueChange = { hwVersion = it },
-            label = { Text("Hardware Version") },
+            label = { Text(AppResources.strings.hardwareVersion) },
             singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
             enabled = !isUpdating,
@@ -76,7 +77,7 @@ fun EditDeviceBottomSheet(
                 modifier = Modifier.weight(1f),
                 enabled = !isUpdating,
             ) {
-                Text("Cancel")
+                Text(AppResources.strings.cancel)
             }
             Button(
                 onClick = { onUpdateDevice(name, hwVersion) },
@@ -89,7 +90,7 @@ fun EditDeviceBottomSheet(
                         strokeWidth = 2.dp,
                     )
                 } else {
-                    Text("Save")
+                    Text(AppResources.strings.save)
                 }
             }
         }

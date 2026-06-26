@@ -4,8 +4,11 @@ import com.biomech.core.common.AppResult
 import com.biomech.core.network.ApiConfig
 import com.biomech.core.network.api.AuthApi
 import com.biomech.core.network.createHttpClient
+import com.biomech.core.network.dto.ProfileDto
+import com.biomech.core.network.dto.UpdateProfileRequest
 import com.biomech.core.storage.KeyValueStorage
 import com.biomech.domain.model.User
+import com.biomech.domain.model.UserProfile
 import com.biomech.domain.repository.AuthRepository
 import io.ktor.client.call.*
 import io.ktor.client.request.*
@@ -68,6 +71,24 @@ class AuthRepositoryImpl(
         return token.ifEmpty { null }
     }
 
+    override suspend fun getProfile(): AppResult<UserProfile> {
+        return try {
+            val profile = authApi.getProfile()
+            AppResult.Success(profile.toDomain())
+        } catch (e: Exception) {
+            AppResult.Error(e.message ?: "Failed to load profile")
+        }
+    }
+
+    override suspend fun updateProfile(nickname: String?): AppResult<UserProfile> {
+        return try {
+            val profile = authApi.updateProfile(UpdateProfileRequest(nickname = nickname))
+            AppResult.Success(profile.toDomain())
+        } catch (e: Exception) {
+            AppResult.Error(e.message ?: "Failed to update profile")
+        }
+    }
+
     private suspend fun syncUser() {
         try {
             createHttpClient().post("/api/v1/auth/firebase")
@@ -82,3 +103,9 @@ class AuthRepositoryImpl(
         ApiConfig.token = access
     }
 }
+
+private fun ProfileDto.toDomain() = UserProfile(
+    email = email,
+    nickname = nickname,
+    deviceCount = device_count,
+)
