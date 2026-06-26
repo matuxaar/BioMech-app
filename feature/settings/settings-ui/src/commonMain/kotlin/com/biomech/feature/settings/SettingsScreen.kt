@@ -9,6 +9,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun SettingsScreen(
     serverUrl: String,
+    connectionStatus: ConnectionStatus = ConnectionStatus.Idle,
     onServerUrlChange: (String) -> Unit,
     onLogout: () -> Unit,
     onTestConnection: () -> Unit = {},
@@ -83,8 +84,35 @@ fun SettingsScreen(
                     Button(
                         onClick = onTestConnection,
                         modifier = Modifier.fillMaxWidth(),
+                        enabled = connectionStatus != ConnectionStatus.Testing,
                     ) {
-                        Text("Test Connection")
+                        if (connectionStatus == ConnectionStatus.Testing) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                strokeWidth = 2.dp,
+                            )
+                        } else {
+                            Text("Test Connection")
+                        }
+                    }
+                    when (connectionStatus) {
+                        ConnectionStatus.Success -> {
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                "Connected!",
+                                color = MaterialTheme.colorScheme.primary,
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                        }
+                        ConnectionStatus.Failed -> {
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                "Connection failed. Check the URL and ensure the server is running.",
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                        }
+                        else -> {}
                     }
                 }
             }

@@ -222,10 +222,12 @@ fun MainScreen(
             if (isOffline) {
                 Surface(
                     color = MaterialTheme.colorScheme.errorContainer,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { selectedTab = BottomTab.SETTINGS },
                 ) {
                     Text(
-                        text = "Offline mode — server unavailable",
+                        text = "Offline — tap to configure server",
                         modifier = Modifier.padding(8.dp),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onErrorContainer,
@@ -307,6 +309,7 @@ fun MainScreen(
                 BottomTab.SETTINGS -> {
                     SettingsScreen(
                         serverUrl = settingsState.serverUrl,
+                        connectionStatus = settingsState.connectionStatus,
                         onServerUrlChange = { settingsViewModel.dispatch(SettingsAction.UpdateServerUrl(it)) },
                         onLogout = {
                             settingsViewModel.dispatch(SettingsAction.Logout)
