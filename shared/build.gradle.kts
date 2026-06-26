@@ -71,5 +71,9 @@ kotlin {
             implementation(libs.koin.compose)
             implementation(libs.kotlinx.coroutines.core)
         }
+
+        androidMain.dependencies {
+            implementation("androidx.activity:activity-compose:1.9.3")
+        }
     }
 }
