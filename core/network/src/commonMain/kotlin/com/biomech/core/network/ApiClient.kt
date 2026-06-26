@@ -4,6 +4,7 @@ import io.ktor.client.*
 import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
@@ -54,4 +55,12 @@ fun createHttpClient(): HttpClient {
             }
         }
     }
+}
+
+suspend inline fun HttpResponse.checkError(): HttpResponse {
+    if (!status.isSuccess()) {
+        val body = try { bodyAsText() } catch (_: Exception) { null }
+        throw Exception(body ?: "Request failed with status ${status.value}")
+    }
+    return this
 }

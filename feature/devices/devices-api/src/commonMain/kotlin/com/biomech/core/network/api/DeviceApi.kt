@@ -1,5 +1,6 @@
 package com.biomech.core.network.api
 
+import com.biomech.core.network.checkError
 import com.biomech.core.network.createHttpClient
 import com.biomech.core.network.dto.*
 import io.ktor.client.call.*
@@ -9,22 +10,22 @@ class DeviceApi {
     private val client = createHttpClient()
 
     suspend fun getDevices(): List<DeviceDto> {
-        return client.get("/api/v1/devices").body()
+        return client.get("/api/v1/devices").checkError().body()
     }
 
     suspend fun createDevice(request: CreateDeviceRequest): DeviceDto {
         return client.post("/api/v1/devices") {
             setBody(request)
-        }.body()
+        }.checkError().body()
     }
 
     suspend fun updateDevice(id: String, request: UpdateDeviceRequest): DeviceDto {
         return client.put("/api/v1/devices/$id") {
             setBody(request)
-        }.body()
+        }.checkError().body()
     }
 
     suspend fun deleteDevice(id: String) {
-        client.delete("/api/v1/devices/$id")
+        client.delete("/api/v1/devices/$id").checkError()
     }
 }

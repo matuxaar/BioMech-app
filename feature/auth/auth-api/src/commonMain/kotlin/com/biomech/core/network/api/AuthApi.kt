@@ -1,5 +1,6 @@
 package com.biomech.core.network.api
 
+import com.biomech.core.network.checkError
 import com.biomech.core.network.createHttpClient
 import com.biomech.core.network.dto.*
 import io.ktor.client.*
@@ -70,12 +71,12 @@ class AuthApi {
     }
 
     suspend fun getProfile(): ProfileDto {
-        return backendClient.get("/api/v1/me").body()
+        return backendClient.get("/api/v1/me").checkError().body()
     }
 
     suspend fun updateProfile(request: UpdateProfileRequest): ProfileDto {
         return backendClient.put("/api/v1/me") {
             setBody(request)
-        }.body()
+        }.checkError().body()
     }
 }
