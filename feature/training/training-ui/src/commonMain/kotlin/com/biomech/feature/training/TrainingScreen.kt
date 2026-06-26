@@ -28,8 +28,8 @@ fun TrainingScreen(
             TopAppBar(
                 title = { Text("Training") },
                 navigationIcon = {
-                    TextButton(onClick = onBack) {
-                        Text("< Back")
+                    IconButton(onClick = onBack) {
+                        Text("<")
                     }
                 },
             )
