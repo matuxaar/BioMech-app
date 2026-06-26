@@ -56,7 +56,6 @@ fun MainScreen(
     val navigator = LocalNavigator.current
     var selectedTab by remember { mutableStateOf(BottomTab.HOME) }
     var showAddDeviceSheet by remember { mutableStateOf(false) }
-    var email by remember { mutableStateOf("user@example.com") }
     var selectedDevice by remember { mutableStateOf<Device?>(null) }
     var showEditSheet by remember { mutableStateOf(false) }
     var editingDevice by remember { mutableStateOf<Device?>(null) }
@@ -82,7 +81,6 @@ fun MainScreen(
             homeViewModel.dispatch(HomeAction.LoadDevices)
             profileViewModel.dispatch(ProfileAction.LoadProfile)
         }
-        profileViewModel.dispatch(ProfileAction.SetEmail(email))
     }
 
     LaunchedEffect(Unit) {

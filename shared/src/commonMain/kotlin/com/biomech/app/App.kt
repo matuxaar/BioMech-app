@@ -138,6 +138,7 @@ fun App() {
                             selectedSessionIds = state.selectedSessionIds,
                             isCreating = state.isCreating,
                             error = state.error,
+                            onBack = { navigator.goBack() },
                             onToggleSession = { viewModel.dispatch(TrainingAction.ToggleSession(it)) },
                             onStartTraining = { viewModel.dispatch(TrainingAction.StartTraining) },
                         )

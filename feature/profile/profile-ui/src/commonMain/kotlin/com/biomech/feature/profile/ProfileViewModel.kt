@@ -46,7 +46,13 @@ class ProfileViewModel(
 
     private suspend fun loadProfile() {
         _state.value = _state.value.copy(isLoading = true)
-        authRepository.refreshToken()
-        _state.value = _state.value.copy(isLoading = false)
+        when (val result = authRepository.refreshToken()) {
+            is AppResult.Success -> {
+                _state.value = _state.value.copy(email = result.data.email, isLoading = false)
+            }
+            is AppResult.Error -> {
+                _state.value = _state.value.copy(isLoading = false)
+            }
+        }
     }
 }

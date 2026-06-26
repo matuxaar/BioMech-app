@@ -19,12 +19,20 @@ fun TrainingScreen(
     selectedSessionIds: Set<String>,
     isCreating: Boolean = false,
     error: String? = null,
+    onBack: () -> Unit = {},
     onToggleSession: (String) -> Unit,
     onStartTraining: () -> Unit,
 ) {
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Training") })
+            TopAppBar(
+                title = { Text("Training") },
+                navigationIcon = {
+                    TextButton(onClick = onBack) {
+                        Text("< Back")
+                    }
+                },
+            )
         }
     ) { padding ->
         Column(
