@@ -16,7 +16,12 @@ import kotlinx.coroutines.withTimeout
 
 data class SettingsState(
     val serverUrl: String = ApiConfig.baseUrl.trimEnd('/'),
+    val connectionStatus: ConnectionStatus = ConnectionStatus.Idle,
 ) : BaseState
+
+enum class ConnectionStatus {
+    Idle, Testing, Success, Failed
+}
 
 sealed class SettingsAction : BaseAction {
     data class UpdateServerUrl(val url: String) : SettingsAction()
@@ -42,12 +47,7 @@ class SettingsViewModel(
                 _state.value = _state.value.copy(serverUrl = action.url)
             }
             SettingsAction.TestConnection -> {
-                val url = _state.value.serverUrl
-                val available = testUrl(url)
-                if (available) {
-                    ApiConfig.baseUrl = url.trimEnd('/') + "/"
-                    _event.send(SettingsEvent.ConnectionRestored)
-                }
+                testConnection()
             }
             SettingsAction.Logout -> {
                 authRepository.logout()
@@ -56,26 +56,43 @@ class SettingsViewModel(
         }
     }
 
-    private suspend fun testUrl(url: String): Boolean {
-        val healthUrl = buildString {
-            val clean = url.trimEnd('/')
-            val idx = clean.indexOf("/api")
-            append(if (idx > 0) clean.substring(0, idx) + "/health" else "$clean/health")
-        }
-        return try {
-            val client = HttpClient {
-                install(HttpTimeout) {
-                    requestTimeoutMillis = 4_000
-                    connectTimeoutMillis = 4_000
+    private suspend fun testConnection() {
+        val url = _state.value.serverUrl.trimEnd('/')
+        _state.value = _state.value.copy(connectionStatus = ConnectionStatus.Testing)
+
+        val candidates = listOf(
+            "$url/health",
+            if (url.contains("/api")) url.substringBefore("/api") + "/health" else null,
+            "$url/api/v1/health",
+        ).filterNotNull()
+
+        val available = candidates.any { candidate ->
+            try {
+                val client = HttpClient {
+                    install(HttpTimeout) {
+                        requestTimeoutMillis = 3_000
+                        connectTimeoutMillis = 3_000
+                    }
                 }
+                try {
+                    withTimeout(4_000) {
+                        client.get(candidate).status == HttpStatusCode.OK
+                    }
+                } finally {
+                    client.close()
+                }
+            } catch (_: Exception) {
+                false
             }
-            withTimeout(5_000) {
-                val response = client.get(healthUrl)
-                client.close()
-                response.status == HttpStatusCode.OK
-            }
-        } catch (_: Exception) {
-            false
+        }
+
+        if (available) {
+            ApiConfig.baseUrl = if (url.contains("/api")) url else "$url/api/v1"
+            ApiConfig.baseUrl = ApiConfig.baseUrl.trimEnd('/') + "/"
+            _state.value = _state.value.copy(connectionStatus = ConnectionStatus.Success)
+            _event.send(SettingsEvent.ConnectionRestored)
+        } else {
+            _state.value = _state.value.copy(connectionStatus = ConnectionStatus.Failed)
         }
     }
 }
