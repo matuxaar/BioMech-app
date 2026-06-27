@@ -51,6 +51,7 @@ sealed class DevicesEvent : BaseEvent {
     data object DeviceCreated : DevicesEvent()
     data object DeviceUpdated : DevicesEvent()
     data object DeviceDeleted : DevicesEvent()
+    data class DeviceError(val message: String) : DevicesEvent()
 }
 
 class DevicesViewModel(
@@ -107,7 +108,7 @@ class DevicesViewModel(
         }
     }
 
-    
+
     private suspend fun updateDevice(id: String, name: String?, hwVersion: String?, type: String?,
         bleServiceUuid: String?, bleCommandCharUuid: String?, bleStatusCharUuid: String?, bleEmgCharUuid: String?,
     ) {
@@ -127,7 +128,7 @@ class DevicesViewModel(
     private suspend fun deleteDevice(id: String) {
         when (val result = deviceRepository.deleteDevice(id)) {
             is AppResult.Success -> _event.send(DevicesEvent.DeviceDeleted)
-            is AppResult.Error -> { /* error handled by caller */ }
+            is AppResult.Error -> _event.send(DevicesEvent.DeviceError(result.message ?: "Failed to delete device"))
         }
     }
 }

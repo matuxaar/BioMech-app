@@ -108,6 +108,7 @@ fun MainScreen(
     var streamingEnabled by remember { mutableStateOf(false) }
     var streamingConnected by remember { mutableStateOf(false) }
     val csvShareLauncher = rememberCsvShareLauncher()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(Unit) {
         if (!isOffline) {
@@ -148,6 +149,9 @@ fun MainScreen(
                     DevicesEvent.DeviceDeleted -> {
                         deletingDevice = null
                         homeViewModel.dispatch(HomeAction.LoadDevices)
+                    }
+                    is DevicesEvent.DeviceError -> {
+                        snackbarHostState.showSnackbar(event.message)
                     }
                 }
             }
@@ -315,7 +319,8 @@ fun MainScreen(
                 }
             }
         },
-        bottomBar = {}
+        bottomBar = {},
+        snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
             Crossfade(targetState = selectedTab) { tab ->
