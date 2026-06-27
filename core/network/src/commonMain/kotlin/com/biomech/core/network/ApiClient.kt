@@ -60,7 +60,8 @@ fun createHttpClient(): HttpClient {
 suspend inline fun HttpResponse.checkError(): HttpResponse {
     if (!status.isSuccess()) {
         val body = try { bodyAsText() } catch (_: Exception) { null }
-        throw Exception(body ?: "Request failed with status ${status.value}")
+        val url = call.request.url.toString()
+        throw Exception("[$url] ${status.value}: ${body ?: "unknown error"}")
     }
     return this
 }

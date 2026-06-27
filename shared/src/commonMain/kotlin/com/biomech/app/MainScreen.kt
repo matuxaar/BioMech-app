@@ -28,10 +28,12 @@ import com.biomech.feature.devices.DevicesAction
 import com.biomech.feature.devices.DevicesEvent
 import com.biomech.feature.devices.DevicesViewModel
 import com.biomech.feature.devices.EditDeviceBottomSheet
+import com.biomech.core.common.currentTimeMillis
 import com.biomech.feature.home.HomeAction
 import com.biomech.feature.home.HomeViewModel
 import com.biomech.feature.home.HomeScreen
 import com.biomech.feature.home.RecordBottomSheet
+import com.biomech.feature.home.RecordedFile
 import com.biomech.feature.profile.ProfileAction
 import com.biomech.feature.profile.ProfileEvent
 import com.biomech.feature.profile.ProfileScreen
@@ -83,6 +85,7 @@ fun MainScreen(
     var settingsSubScreen by remember { mutableStateOf<SettingsSubScreen?>(null) }
     var showRecordSheet by remember { mutableStateOf(false) }
     var recordingDevice by remember { mutableStateOf<Device?>(null) }
+    var savedRecordings by remember { mutableStateOf(listOf<RecordedFile>()) }
 
     val homeViewModel: HomeViewModel = koinInject()
     val homeState by homeViewModel.state.collectAsState()
@@ -266,14 +269,25 @@ fun MainScreen(
             ) {
                 RecordBottomSheet(
                     device = device,
+                    savedRecordings = savedRecordings.filter { it.deviceId == device.id },
                     onDismiss = {
                         showRecordSheet = false
                         recordingDevice = null
                     },
                     onSave = { label, csvBytes ->
-                        showRecordSheet = false
-                        recordingDevice = null
-                        // TODO: store recording for upload via TrainingScreen Files tab
+                        val file = RecordedFile(
+                            fileName = label,
+                            csvBytes = csvBytes,
+                            deviceId = device.id,
+                            deviceName = device.name,
+                            label = label,
+                            sampleCount = csvBytes.size / 50,
+                            timestamp = currentTimeMillis(),
+                        )
+                        savedRecordings = savedRecordings + file
+                    },
+                    onDownload = { file ->
+                        // TODO: actual file export — save to external storage
                     },
                 )
             }

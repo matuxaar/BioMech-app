@@ -70,6 +70,10 @@ fun App() {
         useGridLayout = storage.getBoolean("grid_layout", true)
         locale = Locale.fromValue(storage.getInt("locale", 0))
         AppResources.setLocale(locale)
+        val savedUrl = storage.getString("server_url")
+        if (savedUrl.isNotBlank()) {
+            ApiConfig.baseUrl = savedUrl
+        }
     }
 
     SystemBackHandler(

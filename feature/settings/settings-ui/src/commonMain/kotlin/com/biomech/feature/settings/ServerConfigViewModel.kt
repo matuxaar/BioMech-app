@@ -5,6 +5,7 @@ import com.biomech.core.mvi.BaseEvent
 import com.biomech.core.mvi.BaseState
 import com.biomech.core.mvi.BaseViewModel
 import com.biomech.core.network.ApiConfig
+import com.biomech.core.storage.KeyValueStorage
 import io.ktor.client.*
 import io.ktor.client.plugins.*
 import io.ktor.client.request.*
@@ -29,7 +30,9 @@ sealed class ServerConfigEvent : BaseEvent {
     data object ConnectionRestored : ServerConfigEvent()
 }
 
-class ServerConfigViewModel : BaseViewModel<ServerConfigState, ServerConfigAction, ServerConfigEvent>() {
+class ServerConfigViewModel(
+    private val storage: KeyValueStorage,
+) : BaseViewModel<ServerConfigState, ServerConfigAction, ServerConfigEvent>() {
 
     override val _state = MutableStateFlow(ServerConfigState())
     override val _event = Channel<ServerConfigEvent>(Channel.BUFFERED)
@@ -81,6 +84,7 @@ class ServerConfigViewModel : BaseViewModel<ServerConfigState, ServerConfigActio
         if (available) {
             ApiConfig.baseUrl = if (url.contains("/api")) url else "$url/api/v1"
             ApiConfig.baseUrl = ApiConfig.baseUrl.trimEnd('/') + "/"
+            storage.putString(KEY_SERVER_URL, ApiConfig.baseUrl)
             _state.value = _state.value.copy(connectionStatus = ConnectionStatus.Success)
             _event.send(ServerConfigEvent.ConnectionRestored)
         } else {

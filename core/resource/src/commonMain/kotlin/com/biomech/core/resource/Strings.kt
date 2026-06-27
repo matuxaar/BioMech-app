@@ -565,6 +565,11 @@ class Strings(private val locale: Locale) {
         else -> "${bytes / (1024 * 1024)} MB"
     }
 
+    val noRecordings: String get() = when (locale) {
+        Locale.EN -> "No recordings yet"
+        Locale.RU -> "Ещё записей не было"
+    }
+
     fun deviceTypeLabel(type: String): String = when (locale) {
         Locale.EN -> type.lowercase().replaceFirstChar { it.uppercase() }
         Locale.RU -> when (type.lowercase()) {

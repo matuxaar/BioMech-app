@@ -1,6 +1,8 @@
 package com.biomech.feature.home
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -14,8 +16,50 @@ import kotlin.random.Random
 @Composable
 fun RecordBottomSheet(
     device: Device,
+    savedRecordings: List<RecordedFile>,
     onDismiss: () -> Unit,
     onSave: (label: String, csvBytes: ByteArray) -> Unit,
+    onDownload: (RecordedFile) -> Unit,
+) {
+    var tabIndex by remember { mutableStateOf(0) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 24.dp, start = 24.dp, end = 24.dp, bottom = 24.dp),
+    ) {
+        TabRow(selectedTabIndex = tabIndex) {
+            Tab(
+                selected = tabIndex == 0,
+                onClick = { tabIndex = 0 },
+                text = { Text(AppResources.strings.record) },
+            )
+            Tab(
+                selected = tabIndex == 1,
+                onClick = { tabIndex = 1 },
+                text = {
+                    Text(
+                        if (savedRecordings.isEmpty()) AppResources.strings.files
+                        else "${AppResources.strings.files} (${savedRecordings.size})"
+                    )
+                },
+            )
+        }
+
+        Spacer(Modifier.height(12.dp))
+
+        when (tabIndex) {
+            0 -> RecordTab(device = device, onSave = onSave, onCancel = onDismiss)
+            1 -> SavedRecordingsTab(recordings = savedRecordings, onDownload = onDownload, onDismiss = onDismiss)
+        }
+    }
+}
+
+@Composable
+private fun RecordTab(
+    device: Device,
+    onSave: (label: String, csvBytes: ByteArray) -> Unit,
+    onCancel: () -> Unit,
 ) {
     var isRecording by remember { mutableStateOf(false) }
     var elapsedSeconds by remember { mutableStateOf(0) }
@@ -39,16 +83,9 @@ fun RecordBottomSheet(
     }
 
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(24.dp),
+        modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(
-            AppResources.strings.record,
-            style = MaterialTheme.typography.titleMedium,
-        )
-        Spacer(Modifier.height(8.dp))
         Text(
             device.name,
             style = MaterialTheme.typography.bodyLarge,
@@ -132,8 +169,62 @@ fun RecordBottomSheet(
 
         Spacer(Modifier.height(8.dp))
 
-        TextButton(onClick = onDismiss) {
+        TextButton(onClick = onCancel) {
             Text(AppResources.strings.cancel)
+        }
+    }
+}
+
+@Composable
+private fun SavedRecordingsTab(
+    recordings: List<RecordedFile>,
+    onDownload: (RecordedFile) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    if (recordings.isEmpty()) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                AppResources.strings.noRecordings,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    } else {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(max = 400.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            items(recordings, key = { it.timestamp }) { file ->
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = file.fileName,
+                                style = MaterialTheme.typography.titleSmall,
+                            )
+                            Spacer(Modifier.height(2.dp))
+                            Text(
+                                text = "${AppResources.strings.fileSize(file.fileSize)}  |  ${file.deviceName}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        FilledTonalButton(onClick = { onDownload(file) }) {
+                            Text(AppResources.strings.save)
+                        }
+                    }
+                }
+            }
         }
     }
 }

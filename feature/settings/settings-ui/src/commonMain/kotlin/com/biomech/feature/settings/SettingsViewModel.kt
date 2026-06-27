@@ -5,6 +5,7 @@ import com.biomech.core.mvi.BaseEvent
 import com.biomech.core.mvi.BaseState
 import com.biomech.core.mvi.BaseViewModel
 import com.biomech.core.network.ApiConfig
+import com.biomech.core.storage.KeyValueStorage
 import com.biomech.domain.repository.AuthRepository
 import io.ktor.client.*
 import io.ktor.client.plugins.*
@@ -13,6 +14,8 @@ import io.ktor.http.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.withTimeout
+
+const val KEY_SERVER_URL = "server_url"
 
 data class SettingsState(
     val serverUrl: String = ApiConfig.baseUrl.trimEnd('/'),
@@ -36,6 +39,7 @@ sealed class SettingsEvent : BaseEvent {
 
 class SettingsViewModel(
     private val authRepository: AuthRepository,
+    private val storage: KeyValueStorage,
 ) : BaseViewModel<SettingsState, SettingsAction, SettingsEvent>() {
 
     override val _state = MutableStateFlow(SettingsState())
@@ -89,6 +93,7 @@ class SettingsViewModel(
         if (available) {
             ApiConfig.baseUrl = if (url.contains("/api")) url else "$url/api/v1"
             ApiConfig.baseUrl = ApiConfig.baseUrl.trimEnd('/') + "/"
+            storage.putString(KEY_SERVER_URL, ApiConfig.baseUrl)
             _state.value = _state.value.copy(connectionStatus = ConnectionStatus.Success)
             _event.send(SettingsEvent.ConnectionRestored)
         } else {
