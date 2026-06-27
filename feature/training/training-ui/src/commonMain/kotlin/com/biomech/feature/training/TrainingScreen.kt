@@ -30,6 +30,7 @@ fun TrainingScreen(
     onStartTraining: () -> Unit,
     onSelectTab: (Int) -> Unit = {},
     onDeleteFile: (String) -> Unit = {},
+    onUploadClick: () -> Unit = {},
 ) {
     Scaffold(
         topBar = {
@@ -76,6 +77,7 @@ fun TrainingScreen(
                     isUploading = isUploading,
                     uploadError = uploadError,
                     onDeleteFile = onDeleteFile,
+                    onUploadClick = onUploadClick,
                 )
             }
         }
@@ -198,6 +200,7 @@ private fun FilesTab(
     isUploading: Boolean,
     uploadError: String?,
     onDeleteFile: (String) -> Unit,
+    onUploadClick: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -217,6 +220,19 @@ private fun FilesTab(
             )
             Spacer(Modifier.height(8.dp))
         }
+
+        Button(
+            onClick = onUploadClick,
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !isUploading,
+        ) {
+            if (isUploading) {
+                CircularProgressIndicator(modifier = Modifier.size(20.dp))
+            } else {
+                Text(AppResources.strings.upload)
+            }
+        }
+        Spacer(Modifier.height(12.dp))
 
         if (files.isEmpty()) {
             Box(

@@ -185,6 +185,9 @@ fun App() {
                     Screen.Training -> {
                         val viewModel: TrainingViewModel = koinInject()
                         val state by viewModel.state.collectAsState()
+                        val pickFile = rememberFilePickerLauncher { bytes, fileName ->
+                            viewModel.dispatch(TrainingAction.UploadFile("", "", bytes, fileName))
+                        }
 
                         TrainingScreen(
                             jobs = state.jobs,
@@ -201,6 +204,7 @@ fun App() {
                             onStartTraining = { viewModel.dispatch(TrainingAction.StartTraining) },
                             onSelectTab = { viewModel.dispatch(TrainingAction.SelectTab(it)) },
                             onDeleteFile = { viewModel.dispatch(TrainingAction.DeleteFile(it)) },
+                            onUploadClick = { pickFile() },
                         )
                     }
                 }
