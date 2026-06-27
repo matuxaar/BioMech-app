@@ -9,6 +9,7 @@ import com.biomech.core.network.repository.AuthRepositoryImpl
 import com.biomech.core.network.repository.DeviceRepositoryImpl
 import com.biomech.core.network.repository.EMGRepositoryImpl
 import com.biomech.core.network.repository.TrainingRepositoryImpl
+import com.biomech.core.storage.KeyValueStorage
 import com.biomech.domain.repository.AuthRepository
 import com.biomech.domain.repository.DeviceRepository
 import com.biomech.domain.repository.EMGRepository
@@ -48,8 +49,8 @@ val sharedModule = module {
     factory { HomeViewModel(get()) }
     factory { ProfileViewModel(get()) }
     factory { TrainingViewModel(get(), get()) }
-    factory { SettingsViewModel(get()) }
-    factory { ServerConfigViewModel() }
+    factory { SettingsViewModel(get(), get()) }
+    factory { ServerConfigViewModel(get()) }
 }
 
 val appModules = listOf(sharedModule, platformModule)

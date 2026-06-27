@@ -22,6 +22,7 @@ kotlin {
             implementation(project(":core:resource"))
             implementation(project(":core:base"))
             implementation(project(":core:network"))
+            implementation(project(":core:storage"))
             implementation(libs.kotlinx.coroutines.core)
             implementation(compose.runtime)
             implementation(compose.foundation)
