@@ -4,9 +4,11 @@ import com.biomech.core.common.AppResult
 import com.biomech.core.network.ApiConfig
 import com.biomech.core.network.api.AuthApi
 import com.biomech.core.network.createHttpClient
+import com.biomech.core.network.dto.DashboardStatsDto
 import com.biomech.core.network.dto.ProfileDto
 import com.biomech.core.network.dto.UpdateProfileRequest
 import com.biomech.core.storage.KeyValueStorage
+import com.biomech.domain.model.DashboardStats
 import com.biomech.domain.model.User
 import com.biomech.domain.model.UserProfile
 import com.biomech.domain.repository.AuthRepository
@@ -80,12 +82,39 @@ class AuthRepositoryImpl(
         }
     }
 
-    override suspend fun updateProfile(nickname: String?): AppResult<UserProfile> {
+    override suspend fun updateProfile(nickname: String?, displayName: String?): AppResult<UserProfile> {
         return try {
-            val profile = authApi.updateProfile(UpdateProfileRequest(nickname = nickname))
+            val profile = authApi.updateProfile(UpdateProfileRequest(nickname = nickname, display_name = displayName))
             AppResult.Success(profile.toDomain())
         } catch (e: Exception) {
             AppResult.Error(e.message ?: "Failed to update profile")
+        }
+    }
+
+    override suspend fun uploadAvatar(bytes: ByteArray, fileName: String): AppResult<String> {
+        return try {
+            val photoUrl = authApi.uploadAvatar(bytes, fileName)
+            AppResult.Success(photoUrl)
+        } catch (e: Exception) {
+            AppResult.Error(e.message ?: "Failed to upload avatar")
+        }
+    }
+
+    override suspend fun getUserById(userId: String): AppResult<UserProfile> {
+        return try {
+            val profile = authApi.getUserById(userId)
+            AppResult.Success(profile.toDomain())
+        } catch (e: Exception) {
+            AppResult.Error(e.message ?: "Failed to load user")
+        }
+    }
+
+    override suspend fun getDashboardStats(): AppResult<DashboardStats> {
+        return try {
+            val stats = authApi.getDashboardStats()
+            AppResult.Success(stats.toDomain())
+        } catch (e: Exception) {
+            AppResult.Error(e.message ?: "Failed to load stats")
         }
     }
 
@@ -107,5 +136,15 @@ class AuthRepositoryImpl(
 private fun ProfileDto.toDomain() = UserProfile(
     email = email,
     nickname = nickname,
+    displayName = display_name,
+    photoUrl = photo_url,
     deviceCount = device_count,
+)
+
+private fun DashboardStatsDto.toDomain() = DashboardStats(
+    deviceCount = deviceCount,
+    totalTrainings = totalTrainings,
+    completedTrainings = completedTrainings,
+    averageAccuracy = averageAccuracy,
+    topMovements = topMovements,
 )

@@ -59,3 +59,8 @@ data class UpdateProfileRequest(
     val display_name: String? = null,
     val photo_url: String? = null,
 )
+
+@Serializable
+data class UploadAvatarResponse(
+    val photo_url: String,
+)

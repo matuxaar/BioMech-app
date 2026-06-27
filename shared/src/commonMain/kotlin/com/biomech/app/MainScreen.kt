@@ -342,11 +342,18 @@ fun MainScreen(
                     ProfileScreen(
                         email = if (isOffline) "demo@biomech.app" else profileState.email,
                         nickname = profileState.nickname,
+                        photoUrl = profileState.photoUrl,
                         deviceCount = if (isOffline) offlineDevices.size else profileState.deviceCount,
+                        completedTrainings = profileState.completedTrainings,
+                        averageAccuracy = profileState.averageAccuracy,
+                        topMovements = profileState.topMovements,
                         isUpdating = profileState.isUpdating,
                         updateError = profileState.updateError,
                         onUpdateNickname = { nickname ->
                             profileViewModel.dispatch(ProfileAction.UpdateNickname(nickname))
+                        },
+                        onUploadAvatar = { bytes, fileName ->
+                            profileViewModel.dispatch(ProfileAction.UploadAvatar(bytes, fileName))
                         },
                     )
                 }

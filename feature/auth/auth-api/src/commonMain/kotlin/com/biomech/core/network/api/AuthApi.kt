@@ -8,6 +8,7 @@ import io.ktor.client.call.*
 import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
+import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
@@ -78,5 +79,25 @@ class AuthApi {
         return backendClient.put("/api/v1/me") {
             setBody(request)
         }.checkError().body()
+    }
+
+    suspend fun uploadAvatar(bytes: ByteArray, fileName: String): String {
+        val resp = backendClient.post("/api/v1/me/avatar") {
+            setBody(MultiPartFormDataContent(formData {
+                append("avatar", bytes, Headers.build {
+                    append(HttpHeaders.ContentDisposition, "filename=\"$fileName\"")
+                })
+            }))
+            contentType(ContentType.MultiPart.FormData)
+        }.checkError()
+        return resp.body<UploadAvatarResponse>().photo_url
+    }
+
+    suspend fun getUserById(userId: String): ProfileDto {
+        return backendClient.get("/api/v1/users/$userId").checkError().body()
+    }
+
+    suspend fun getDashboardStats(): DashboardStatsDto {
+        return backendClient.get("/api/v1/stats/dashboard").checkError().body()
     }
 }

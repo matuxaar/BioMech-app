@@ -1,27 +1,46 @@
 package com.biomech.feature.profile
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.biomech.core.image.BioMechAsyncImage
+import com.biomech.core.image.rememberImagePickerLauncher
+import com.biomech.core.network.ApiConfig
 import com.biomech.core.resource.AppResources
 
 @Composable
 fun ProfileScreen(
     email: String,
     nickname: String = "",
+    photoUrl: String = "",
     deviceCount: Int = 0,
     completedTrainings: Int = 0,
+    averageAccuracy: Double = 0.0,
+    topMovements: List<String> = emptyList(),
     isUpdating: Boolean = false,
     updateError: String? = null,
     onUpdateNickname: ((String) -> Unit)? = null,
+    onUploadAvatar: ((ByteArray, String) -> Unit)? = null,
 ) {
     var editingNickname by remember(nickname) { mutableStateOf(nickname) }
     var showEditor by remember { mutableStateOf(false) }
+    var showAvatarPicker by remember { mutableStateOf(false) }
+
+    val pickImage = rememberImagePickerLauncher { bytes, fileName ->
+        onUploadAvatar?.invoke(bytes, fileName)
+    }
 
     Scaffold(
         topBar = {
@@ -47,7 +66,25 @@ fun ProfileScreen(
                 .padding(horizontal = 24.dp, vertical = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text("\uD83D\uDC64", fontSize = 56.sp)
+            Box(contentAlignment = Alignment.BottomEnd) {
+                val fullUrl = if (photoUrl.startsWith("http")) photoUrl
+                    else {
+                        val base = ApiConfig.baseUrl.trimEnd('/')
+                        val host = base.substringBefore("/api").trimEnd('/')
+                        host + photoUrl
+                    }
+                AvatarImage(fullUrl, nickname, 80.dp)
+                if (onUploadAvatar != null) {
+                    FilledIconButton(
+                        onClick = { pickImage() },
+                        modifier = Modifier.size(28.dp),
+                        shape = CircleShape,
+                        contentPadding = PaddingValues(4.dp),
+                    ) {
+                        Text("+", fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
 
             Spacer(Modifier.height(12.dp))
 
@@ -126,28 +163,77 @@ fun ProfileScreen(
                 )
             }
 
-            Spacer(Modifier.height(32.dp))
+            Spacer(Modifier.height(16.dp))
 
-            Card(
+            Row(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                ),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        AppResources.strings.dashboard,
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Spacer(Modifier.height(4.dp))
-                    Text(
-                        AppResources.strings.dashboardDesc,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                StatCard(
+                    value = "${(averageAccuracy * 100).toInt()}%",
+                    label = "Accuracy",
+                    modifier = Modifier.weight(1f),
+                )
+                if (topMovements.isNotEmpty()) {
+                    StatCard(
+                        value = topMovements.take(3).joinToString(", "),
+                        label = "Top movements",
+                        modifier = Modifier.weight(1f),
                     )
                 }
             }
+
+            Spacer(Modifier.height(12.dp))
+
+            if (topMovements.isNotEmpty()) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                    ),
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            AppResources.strings.dashboard,
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            AppResources.strings.dashboardDesc,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AvatarImage(photoUrl: String, fallback: String, size: Dp) {
+    Box(
+        modifier = Modifier
+            .size(size)
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.surfaceVariant),
+        contentAlignment = Alignment.Center,
+    ) {
+        if (photoUrl.isNotBlank()) {
+            BioMechAsyncImage(
+                model = photoUrl,
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop,
+            )
+        } else {
+            Text(
+                (fallback.firstOrNull()?.uppercase() ?: "U"),
+                fontSize = (size.value * 0.4).sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }
@@ -162,12 +248,14 @@ private fun StatCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 16.dp),
+                .padding(vertical = 16.dp, horizontal = 8.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
                 value,
                 style = MaterialTheme.typography.headlineSmall,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
             )
             Text(
                 label,

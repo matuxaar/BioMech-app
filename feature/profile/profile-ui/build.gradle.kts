@@ -22,6 +22,7 @@ kotlin {
             implementation(project(":core:common"))
             implementation(project(":core:resource"))
             implementation(project(":core:navigation"))
+            implementation(project(":core:image"))
             implementation(project(":feature:auth:auth-domain"))
         }
     }

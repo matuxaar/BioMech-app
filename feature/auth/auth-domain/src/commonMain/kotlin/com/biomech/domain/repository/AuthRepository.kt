@@ -11,5 +11,8 @@ interface AuthRepository {
     suspend fun logout()
     suspend fun getToken(): String?
     suspend fun getProfile(): AppResult<UserProfile>
-    suspend fun updateProfile(nickname: String?): AppResult<UserProfile>
+    suspend fun updateProfile(nickname: String? = null, displayName: String? = null): AppResult<UserProfile>
+    suspend fun uploadAvatar(bytes: ByteArray, fileName: String): AppResult<String>
+    suspend fun getUserById(userId: String): AppResult<UserProfile>
+    suspend fun getDashboardStats(): AppResult<DashboardStats>
 }
