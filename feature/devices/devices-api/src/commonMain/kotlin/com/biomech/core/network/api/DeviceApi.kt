@@ -28,4 +28,8 @@ class DeviceApi {
     suspend fun deleteDevice(id: String) {
         client.delete("/api/v1/devices/$id").checkError()
     }
+
+    suspend fun getDeviceActions(deviceId: String): DeviceActionsResponseDto {
+        return client.get("/api/v1/devices/$deviceId/actions").checkError().body()
+    }
 }

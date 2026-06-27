@@ -23,7 +23,7 @@ import org.koin.dsl.module
 
 val viewModelsModule: Module = module {
     factory { LoginViewModel(get()) }
-    factory { DashboardViewModel(get(), get()) }
+    factory { DashboardViewModel(get(), get(), get()) }
     factory { HomeViewModel(get()) }
     factory { ProfileViewModel(get()) }
     factory { SettingsViewModel(get(), get()) }

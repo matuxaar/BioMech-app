@@ -137,7 +137,12 @@ private fun ProfileDto.toDomain() = UserProfile(
     email = email,
     nickname = nickname,
     displayName = display_name,
-    photoUrl = photo_url,
+    photoUrl = if (photo_url.startsWith("http")) photo_url
+        else {
+            val base = ApiConfig.baseUrl.trimEnd('/')
+            val host = base.substringBefore("/api").trimEnd('/')
+            host + photo_url
+        },
     deviceCount = device_count,
 )
 

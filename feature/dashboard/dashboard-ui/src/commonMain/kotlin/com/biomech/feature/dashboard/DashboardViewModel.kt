@@ -1,16 +1,19 @@
 package com.biomech.feature.dashboard
 
+import com.biomech.core.ble.BleCharacteristicValue
 import com.biomech.core.ble.BleManager
 import com.biomech.core.ble.ConnectionState
-import com.biomech.core.ble.ProstheticCommand
-import com.biomech.core.ble.ProstheticState
+import com.biomech.core.common.AppResult
 import com.biomech.core.mvi.BaseAction
 import com.biomech.core.mvi.BaseEvent
 import com.biomech.core.mvi.BaseState
 import com.biomech.core.mvi.BaseViewModel
 import com.biomech.core.network.api.PredictStreamClient
 import com.biomech.core.network.api.StreamSample
+import com.biomech.domain.model.Device
+import com.biomech.domain.model.DeviceAction
 import com.biomech.domain.model.EMGSample
+import com.biomech.domain.repository.DeviceRepository
 import com.biomech.domain.usecase.StartEMGSessionUseCase
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -23,14 +26,17 @@ data class DashboardState(
     val isRecording: Boolean = false,
     val predictionLabel: String? = null,
     val streamConnected: Boolean = false,
-    val prostheticConnected: Boolean = false,
-    val prostheticMovement: String = "",
+    val connectedDeviceId: String = "",
+    val connectedDevice: Device? = null,
+    val deviceActions: List<DeviceAction> = emptyList(),
+    val notificationValues: List<Pair<String, ByteArray>> = emptyList(),
 ) : BaseState
 
 sealed class DashboardAction : BaseAction {
     data object StartRecording : DashboardAction()
     data object StopRecording : DashboardAction()
-    data class SendProstheticCommand(val command: ProstheticCommand) : DashboardAction()
+    data class SelectDevice(val deviceId: String) : DashboardAction()
+    data class SendActionCode(val actionCode: Int) : DashboardAction()
 }
 
 sealed class DashboardEvent : BaseEvent
@@ -38,6 +44,7 @@ sealed class DashboardEvent : BaseEvent
 class DashboardViewModel(
     private val bleManager: BleManager,
     private val startSessionUseCase: StartEMGSessionUseCase,
+    private val deviceRepository: DeviceRepository,
 ) : BaseViewModel<DashboardState, DashboardAction, DashboardEvent>() {
 
     override val _state = MutableStateFlow(DashboardState())
@@ -64,11 +71,10 @@ class DashboardViewModel(
             }
         }
         scope.launch {
-            bleManager.prostheticState.collect { state ->
-                _state.value = _state.value.copy(
-                    prostheticConnected = state.connected,
-                    prostheticMovement = state.currentMovement,
-                )
+            bleManager.characteristicValueStream.collect { value ->
+                val values = _state.value.notificationValues.toMutableList()
+                values.add(value.charUuid to value.data)
+                _state.value = _state.value.copy(notificationValues = values)
             }
         }
         scope.launch {
@@ -107,9 +113,53 @@ class DashboardViewModel(
                     predictionLabel = null,
                 )
             }
-            is DashboardAction.SendProstheticCommand -> {
-                bleManager.sendProstheticCommand(action.command)
+            is DashboardAction.SelectDevice -> {
+                selectDevice(action.deviceId)
             }
+            is DashboardAction.SendActionCode -> {
+                val device = _state.value.connectedDevice ?: return
+                if (device.bleCommandCharUuid.isNotBlank()) {
+                    bleManager.writeCharacteristic(device.bleCommandCharUuid, byteArrayOf(action.actionCode.toByte()))
+                }
+            }
+        }
+    }
+
+    private suspend fun selectDevice(deviceId: String) {
+        when (val result = deviceRepository.getDevices()) {
+            is AppResult.Success -> {
+                val device = result.data.find { it.id == deviceId }
+                if (device != null) {
+                    _state.value = _state.value.copy(
+                        connectedDeviceId = deviceId,
+                        connectedDevice = device,
+                    )
+                    loadDeviceActions(deviceId)
+                    connectBle(device)
+                }
+            }
+            is AppResult.Error -> { }
+        }
+    }
+
+    private suspend fun loadDeviceActions(deviceId: String) {
+        when (val result = deviceRepository.getDeviceActions(deviceId)) {
+            is AppResult.Success -> {
+                _state.value = _state.value.copy(deviceActions = result.data)
+            }
+            is AppResult.Error -> { }
+        }
+    }
+
+    private suspend fun connectBle(device: Device) {
+        val serviceUuid = device.bleServiceUuid
+        val notifyUuids = listOfNotNull(
+            device.bleEmgCharUuid.ifBlank { null },
+            device.bleStatusCharUuid.ifBlank { null },
+        )
+        val writeUuid = device.bleCommandCharUuid.ifBlank { null }
+        if (serviceUuid.isNotBlank()) {
+            bleManager.connect(device.id, serviceUuid, notifyUuids, writeUuid)
         }
     }
 }

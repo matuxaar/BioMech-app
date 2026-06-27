@@ -2,9 +2,9 @@ package com.biomech.core.network.repository
 
 import com.biomech.core.common.AppResult
 import com.biomech.core.network.api.DeviceApi
-import com.biomech.core.network.dto.CreateDeviceRequest
-import com.biomech.core.network.dto.UpdateDeviceRequest
+import com.biomech.core.network.dto.*
 import com.biomech.domain.model.Device
+import com.biomech.domain.model.DeviceAction
 import com.biomech.domain.model.DeviceType
 import com.biomech.domain.repository.DeviceRepository
 
@@ -23,9 +23,21 @@ open class DeviceRepositoryImpl(
         }
     }
 
-    override suspend fun createDevice(type: String, name: String, hwVersion: String): AppResult<Device> {
+    override suspend fun createDevice(
+        type: String, name: String, hwVersion: String,
+        bleServiceUuid: String, bleCommandCharUuid: String,
+        bleStatusCharUuid: String, bleEmgCharUuid: String,
+    ): AppResult<Device> {
         return try {
-            val dto = deviceApi.createDevice(CreateDeviceRequest(type, name, hwVersion))
+            val dto = deviceApi.createDevice(CreateDeviceRequest(
+                type = type,
+                name = name,
+                hwVersion = hwVersion,
+                bleServiceUuid = bleServiceUuid,
+                bleCommandCharUuid = bleCommandCharUuid,
+                bleStatusCharUuid = bleStatusCharUuid,
+                bleEmgCharUuid = bleEmgCharUuid,
+            ))
             val device = dto.toDomain()
             afterDeviceCreated(device)
             AppResult.Success(device)
@@ -34,12 +46,20 @@ open class DeviceRepositoryImpl(
         }
     }
 
-    override suspend fun updateDevice(id: String, name: String?, hwVersion: String?, type: String?): AppResult<Device> {
+    override suspend fun updateDevice(
+        id: String, name: String?, hwVersion: String?, type: String?,
+        bleServiceUuid: String?, bleCommandCharUuid: String?,
+        bleStatusCharUuid: String?, bleEmgCharUuid: String?,
+    ): AppResult<Device> {
         return try {
             val dto = deviceApi.updateDevice(id, UpdateDeviceRequest(
                 name = name,
-                hw_version = hwVersion,
+                hwVersion = hwVersion,
                 type = type,
+                bleServiceUuid = bleServiceUuid,
+                bleCommandCharUuid = bleCommandCharUuid,
+                bleStatusCharUuid = bleStatusCharUuid,
+                bleEmgCharUuid = bleEmgCharUuid,
             ))
             AppResult.Success(dto.toDomain())
         } catch (e: Exception) {
@@ -56,14 +76,34 @@ open class DeviceRepositoryImpl(
         }
     }
 
+    override suspend fun getDeviceActions(deviceId: String): AppResult<List<DeviceAction>> {
+        return try {
+            val resp = deviceApi.getDeviceActions(deviceId)
+            AppResult.Success(resp.actions.map { it.toDomain() })
+        } catch (e: Exception) {
+            AppResult.Error(e.message ?: "Failed to load device actions")
+        }
+    }
+
     protected open suspend fun afterDevicesFetched(devices: List<Device>) {}
     protected open suspend fun getCachedDevices(): AppResult<List<Device>>? = null
     protected open suspend fun afterDeviceCreated(device: Device) {}
 }
 
-internal fun com.biomech.core.network.dto.DeviceDto.toDomain() = Device(
+internal fun DeviceDto.toDomain() = Device(
     id = id,
     type = if (type == "prosthetic") DeviceType.PROSTHETIC else DeviceType.SENSOR,
     name = name,
-    hwVersion = hw_version,
+    hwVersion = hwVersion,
+    bleServiceUuid = bleServiceUuid,
+    bleCommandCharUuid = bleCommandCharUuid,
+    bleStatusCharUuid = bleStatusCharUuid,
+    bleEmgCharUuid = bleEmgCharUuid,
+)
+
+internal fun DeviceActionDto.toDomain() = DeviceAction(
+    name = name,
+    emoji = emoji,
+    actionCode = actionCode,
+    accuracy = accuracy,
 )

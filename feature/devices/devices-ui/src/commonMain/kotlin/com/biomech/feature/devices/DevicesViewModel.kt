@@ -29,12 +29,20 @@ sealed class DevicesAction : BaseAction {
         val name: String,
         val type: String,
         val hwVersion: String,
+        val bleServiceUuid: String = "",
+        val bleCommandCharUuid: String = "",
+        val bleStatusCharUuid: String = "",
+        val bleEmgCharUuid: String = "",
     ) : DevicesAction()
     data class UpdateDevice(
         val id: String,
         val name: String?,
         val hwVersion: String?,
         val type: String?,
+        val bleServiceUuid: String? = null,
+        val bleCommandCharUuid: String? = null,
+        val bleStatusCharUuid: String? = null,
+        val bleEmgCharUuid: String? = null,
     ) : DevicesAction()
     data class DeleteDevice(val id: String) : DevicesAction()
 }
@@ -72,17 +80,23 @@ class DevicesViewModel(
                 _state.value = _state.value.copy(isScanning = false)
             }
             is DevicesAction.Connect -> {
-                bleManager.connect(action.deviceId)
+                val chars = bleManager.discoverCharacteristics(action.deviceId)
+                // characteristic discovery result available for future UI enhancement
             }
-            is DevicesAction.CreateDevice -> createDevice(action.name, action.type, action.hwVersion)
-            is DevicesAction.UpdateDevice -> updateDevice(action.id, action.name, action.hwVersion, action.type)
+            is DevicesAction.CreateDevice -> createDevice(action.name, action.type, action.hwVersion,
+                action.bleServiceUuid, action.bleCommandCharUuid, action.bleStatusCharUuid, action.bleEmgCharUuid)
+            is DevicesAction.UpdateDevice -> updateDevice(action.id, action.name, action.hwVersion, action.type,
+                action.bleServiceUuid, action.bleCommandCharUuid, action.bleStatusCharUuid, action.bleEmgCharUuid)
             is DevicesAction.DeleteDevice -> deleteDevice(action.id)
         }
     }
 
-    private suspend fun createDevice(name: String, type: String, hwVersion: String) {
+    private suspend fun createDevice(name: String, type: String, hwVersion: String,
+        bleServiceUuid: String, bleCommandCharUuid: String, bleStatusCharUuid: String, bleEmgCharUuid: String,
+    ) {
         _state.value = _state.value.copy(isCreating = true, createError = null)
-        when (val result = deviceRepository.createDevice(type, name, hwVersion)) {
+        when (val result = deviceRepository.createDevice(type, name, hwVersion,
+                bleServiceUuid, bleCommandCharUuid, bleStatusCharUuid, bleEmgCharUuid)) {
             is AppResult.Success -> {
                 _state.value = _state.value.copy(isCreating = false)
                 _event.send(DevicesEvent.DeviceCreated)
@@ -93,9 +107,13 @@ class DevicesViewModel(
         }
     }
 
-    private suspend fun updateDevice(id: String, name: String?, hwVersion: String?, type: String?) {
+    
+    private suspend fun updateDevice(id: String, name: String?, hwVersion: String?, type: String?,
+        bleServiceUuid: String?, bleCommandCharUuid: String?, bleStatusCharUuid: String?, bleEmgCharUuid: String?,
+    ) {
         _state.value = _state.value.copy(isUpdating = true, updateError = null)
-        when (val result = deviceRepository.updateDevice(id, name, hwVersion, type)) {
+        when (val result = deviceRepository.updateDevice(id, name, hwVersion, type,
+                bleServiceUuid, bleCommandCharUuid, bleStatusCharUuid, bleEmgCharUuid)) {
             is AppResult.Success -> {
                 _state.value = _state.value.copy(isUpdating = false)
                 _event.send(DevicesEvent.DeviceUpdated)

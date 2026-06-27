@@ -24,6 +24,7 @@ kotlin {
             implementation(project(":core:base"))
             implementation(project(":core:component"))
             implementation(project(":core:network"))
+            implementation(project(":feature:devices:devices-domain"))
             implementation(libs.kotlinx.coroutines.core)
             implementation(compose.runtime)
             implementation(compose.foundation)

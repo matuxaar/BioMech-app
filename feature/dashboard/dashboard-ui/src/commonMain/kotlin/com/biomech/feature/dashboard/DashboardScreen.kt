@@ -7,9 +7,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.biomech.core.ble.ProstheticCommand
 import com.biomech.core.component.EMGChart
 import com.biomech.core.resource.AppResources
+import com.biomech.domain.model.DeviceAction
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -18,33 +18,17 @@ fun DashboardScreen(
     emgData: List<Float>,
     predictionLabel: String?,
     streamConnected: Boolean,
-    prostheticConnected: Boolean = false,
-    prostheticMovement: String = "",
+    deviceActions: List<DeviceAction> = emptyList(),
     onStartRecording: () -> Unit,
     onStopRecording: () -> Unit,
     onNavigateToTraining: () -> Unit = {},
-    onSendProstheticCommand: (ProstheticCommand) -> Unit = {},
+    onSendActionCode: (Int) -> Unit = {},
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(AppResources.strings.dashboardTitle) },
                 actions = {
-                    if (prostheticMovement.isNotBlank()) {
-                        Text(
-                            text = prostheticMovement,
-                            color = MaterialTheme.colorScheme.tertiary,
-                            style = MaterialTheme.typography.labelMedium,
-                        )
-                    }
-                    if (prostheticConnected) {
-                        Spacer(Modifier.width(4.dp))
-                        Text(
-                            text = "●",
-                            color = MaterialTheme.colorScheme.tertiary,
-                            style = MaterialTheme.typography.labelMedium,
-                        )
-                    }
                     if (predictionLabel != null) {
                         Text(
                             text = predictionLabel,
@@ -55,7 +39,7 @@ fun DashboardScreen(
                     if (streamConnected) {
                         Spacer(Modifier.width(4.dp))
                         Text(
-                            text = "●",
+                            text = "\u25CF",
                             color = MaterialTheme.colorScheme.primary,
                             style = MaterialTheme.typography.labelMedium,
                         )
@@ -142,7 +126,7 @@ fun DashboardScreen(
                 }
             }
 
-            if (prostheticConnected) {
+            if (deviceActions.isNotEmpty()) {
                 item {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
@@ -152,22 +136,26 @@ fun DashboardScreen(
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Text(
-                                "Prosthetic Control",
+                                "Device Commands",
                                 style = MaterialTheme.typography.titleMedium,
                             )
                             Spacer(Modifier.height(8.dp))
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            ) {
-                                ProstheticCommand.values().take(4).forEach { cmd ->
-                                    FilledTonalButton(
-                                        onClick = { onSendProstheticCommand(cmd) },
-                                        modifier = Modifier.weight(1f),
-                                    ) {
-                                        Text(cmd.label)
+                            val rows = deviceActions.chunked(4)
+                            rows.forEach { row ->
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                ) {
+                                    row.forEach { action ->
+                                        FilledTonalButton(
+                                            onClick = { onSendActionCode(action.actionCode) },
+                                            modifier = Modifier.weight(1f),
+                                        ) {
+                                            Text("${action.emoji} ${action.name}")
+                                        }
                                     }
                                 }
+                                Spacer(Modifier.height(8.dp))
                             }
                         }
                     }

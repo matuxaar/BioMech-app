@@ -17,7 +17,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.biomech.core.image.BioMechAsyncImage
 import com.biomech.core.image.rememberImagePickerLauncher
-import com.biomech.core.network.ApiConfig
 import com.biomech.core.resource.AppResources
 
 @Composable
@@ -67,19 +66,12 @@ fun ProfileScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Box(contentAlignment = Alignment.BottomEnd) {
-                val fullUrl = if (photoUrl.startsWith("http")) photoUrl
-                    else {
-                        val base = ApiConfig.baseUrl.trimEnd('/')
-                        val host = base.substringBefore("/api").trimEnd('/')
-                        host + photoUrl
-                    }
-                AvatarImage(fullUrl, nickname, 80.dp)
+                AvatarImage(photoUrl, nickname, 80.dp)
                 if (onUploadAvatar != null) {
                     FilledIconButton(
                         onClick = { pickImage() },
                         modifier = Modifier.size(28.dp),
                         shape = CircleShape,
-                        contentPadding = PaddingValues(4.dp),
                     ) {
                         Text("+", fontSize = 14.sp, fontWeight = FontWeight.Bold)
                     }

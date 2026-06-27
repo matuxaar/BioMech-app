@@ -11,19 +11,16 @@ class IosBleManager : BleManager {
     private val _connectionState = MutableStateFlow(ConnectionState.DISCONNECTED)
     override val connectionState = _connectionState.asStateFlow()
 
-    private val _emgDataStream = MutableStateFlow(
-        EMGSample(0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f)
-    )
+    private val _emgDataStream = MutableStateFlow(EMGSample(0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f))
     override val emgDataStream = _emgDataStream.asStateFlow()
 
-    private val _prostheticState = MutableStateFlow(ProstheticState())
-    override val prostheticState = _prostheticState.asStateFlow()
+    private val _characteristicValue = MutableStateFlow(BleCharacteristicValue("", ByteArray(0)))
+    override val characteristicValueStream = _characteristicValue.asStateFlow()
 
     override suspend fun startScanning() { }
-
     override suspend fun stopScanning() { }
 
-    override suspend fun connect(deviceId: String) {
+    override suspend fun connect(deviceId: String, serviceUuid: String, notifyCharUuids: List<String>, writeCharUuid: String?) {
         _connectionState.value = ConnectionState.CONNECTING
         _connectionState.value = ConnectionState.CONNECTED
     }
@@ -32,5 +29,7 @@ class IosBleManager : BleManager {
         _connectionState.value = ConnectionState.DISCONNECTED
     }
 
-    override suspend fun sendProstheticCommand(command: ProstheticCommand) { }
+    override suspend fun writeCharacteristic(charUuid: String, data: ByteArray) { }
+
+    override suspend fun discoverCharacteristics(deviceId: String): List<BleCharacteristicInfo> = emptyList()
 }

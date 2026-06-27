@@ -44,7 +44,7 @@ val sharedModule = module {
     single<StartEMGSessionUseCase> { StartEMGSessionUseCase(get()) }
 
     factory { LoginViewModel(get()) }
-    factory { DashboardViewModel(get(), get()) }
+    factory { DashboardViewModel(get(), get(), get()) }
     factory { DevicesViewModel(get(), get()) }
     factory { HomeViewModel(get()) }
     factory { ProfileViewModel(get()) }

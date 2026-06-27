@@ -121,6 +121,7 @@ fun MainScreen(
             profileViewModel.event.collect { event ->
                 when (event) {
                     ProfileEvent.NavigateToLogin -> navigator.navigateAndClear(Screen.Login)
+                    is ProfileEvent.Error -> { }
                 }
             }
         }

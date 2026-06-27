@@ -1,6 +1,7 @@
 package com.biomech.domain.repository
 
 import com.biomech.core.common.AppResult
+import com.biomech.domain.model.DashboardStats
 import com.biomech.domain.model.User
 import com.biomech.domain.model.UserProfile
 
