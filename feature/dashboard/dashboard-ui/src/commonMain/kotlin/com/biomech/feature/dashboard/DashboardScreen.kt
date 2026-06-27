@@ -7,6 +7,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.biomech.core.ble.ProstheticCommand
 import com.biomech.core.component.EMGChart
 import com.biomech.core.resource.AppResources
 
@@ -17,15 +18,33 @@ fun DashboardScreen(
     emgData: List<Float>,
     predictionLabel: String?,
     streamConnected: Boolean,
+    prostheticConnected: Boolean = false,
+    prostheticMovement: String = "",
     onStartRecording: () -> Unit,
     onStopRecording: () -> Unit,
     onNavigateToTraining: () -> Unit = {},
+    onSendProstheticCommand: (ProstheticCommand) -> Unit = {},
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(AppResources.strings.dashboardTitle) },
                 actions = {
+                    if (prostheticMovement.isNotBlank()) {
+                        Text(
+                            text = prostheticMovement,
+                            color = MaterialTheme.colorScheme.tertiary,
+                            style = MaterialTheme.typography.labelMedium,
+                        )
+                    }
+                    if (prostheticConnected) {
+                        Spacer(Modifier.width(4.dp))
+                        Text(
+                            text = "●",
+                            color = MaterialTheme.colorScheme.tertiary,
+                            style = MaterialTheme.typography.labelMedium,
+                        )
+                    }
                     if (predictionLabel != null) {
                         Text(
                             text = predictionLabel,
@@ -119,6 +138,38 @@ fun DashboardScreen(
                         modifier = Modifier.weight(1f)
                     ) {
                         Text(AppResources.strings.stop)
+                    }
+                }
+            }
+
+            if (prostheticConnected) {
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.5f),
+                        ),
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(
+                                "Prosthetic Control",
+                                style = MaterialTheme.typography.titleMedium,
+                            )
+                            Spacer(Modifier.height(8.dp))
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                ProstheticCommand.values().take(4).forEach { cmd ->
+                                    FilledTonalButton(
+                                        onClick = { onSendProstheticCommand(cmd) },
+                                        modifier = Modifier.weight(1f),
+                                    ) {
+                                        Text(cmd.label)
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }

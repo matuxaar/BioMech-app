@@ -16,21 +16,21 @@ class IosBleManager : BleManager {
     )
     override val emgDataStream = _emgDataStream.asStateFlow()
 
-    override suspend fun startScanning() {
-        // TODO: Implement CoreBluetooth scanning
-    }
+    private val _prostheticState = MutableStateFlow(ProstheticState())
+    override val prostheticState = _prostheticState.asStateFlow()
 
-    override suspend fun stopScanning() {
-        // TODO: Implement stop scanning
-    }
+    override suspend fun startScanning() { }
+
+    override suspend fun stopScanning() { }
 
     override suspend fun connect(deviceId: String) {
         _connectionState.value = ConnectionState.CONNECTING
-        // TODO: Implement CoreBluetooth connection
         _connectionState.value = ConnectionState.CONNECTED
     }
 
     override suspend fun disconnect() {
         _connectionState.value = ConnectionState.DISCONNECTED
     }
+
+    override suspend fun sendProstheticCommand(command: ProstheticCommand) { }
 }

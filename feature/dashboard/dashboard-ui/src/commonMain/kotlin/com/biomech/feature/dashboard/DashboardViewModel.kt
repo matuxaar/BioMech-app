@@ -2,6 +2,8 @@ package com.biomech.feature.dashboard
 
 import com.biomech.core.ble.BleManager
 import com.biomech.core.ble.ConnectionState
+import com.biomech.core.ble.ProstheticCommand
+import com.biomech.core.ble.ProstheticState
 import com.biomech.core.mvi.BaseAction
 import com.biomech.core.mvi.BaseEvent
 import com.biomech.core.mvi.BaseState
@@ -21,11 +23,14 @@ data class DashboardState(
     val isRecording: Boolean = false,
     val predictionLabel: String? = null,
     val streamConnected: Boolean = false,
+    val prostheticConnected: Boolean = false,
+    val prostheticMovement: String = "",
 ) : BaseState
 
 sealed class DashboardAction : BaseAction {
     data object StartRecording : DashboardAction()
     data object StopRecording : DashboardAction()
+    data class SendProstheticCommand(val command: ProstheticCommand) : DashboardAction()
 }
 
 sealed class DashboardEvent : BaseEvent
@@ -56,6 +61,14 @@ class DashboardViewModel(
                 data.add(sample.channel1)
                 if (data.size > 200) data.removeAt(0)
                 _state.value = _state.value.copy(emgData = data)
+            }
+        }
+        scope.launch {
+            bleManager.prostheticState.collect { state ->
+                _state.value = _state.value.copy(
+                    prostheticConnected = state.connected,
+                    prostheticMovement = state.currentMovement,
+                )
             }
         }
         scope.launch {
@@ -93,6 +106,9 @@ class DashboardViewModel(
                     streamConnected = false,
                     predictionLabel = null,
                 )
+            }
+            is DashboardAction.SendProstheticCommand -> {
+                bleManager.sendProstheticCommand(action.command)
             }
         }
     }

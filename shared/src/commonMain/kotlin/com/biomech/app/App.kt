@@ -176,9 +176,12 @@ fun App() {
                             emgData = state.emgData,
                             predictionLabel = state.predictionLabel,
                             streamConnected = state.streamConnected,
+                            prostheticConnected = state.prostheticConnected,
+                            prostheticMovement = state.prostheticMovement,
                             onStartRecording = { viewModel.dispatch(DashboardAction.StartRecording) },
                             onStopRecording = { viewModel.dispatch(DashboardAction.StopRecording) },
                             onNavigateToTraining = { navigator.navigateTo(Screen.Training) },
+                            onSendProstheticCommand = { viewModel.dispatch(DashboardAction.SendProstheticCommand(it)) },
                         )
                     }
 

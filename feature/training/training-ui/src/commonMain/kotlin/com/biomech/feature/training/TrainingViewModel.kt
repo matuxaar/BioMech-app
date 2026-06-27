@@ -10,8 +10,11 @@ import com.biomech.domain.model.TrainingFile
 import com.biomech.domain.model.TrainingJob
 import com.biomech.domain.repository.EMGRepository
 import com.biomech.domain.repository.TrainingRepository
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 data class TrainingState(
@@ -48,8 +51,24 @@ class TrainingViewModel(
     override val _state = MutableStateFlow(TrainingState())
     override val _event = Channel<TrainingEvent>(Channel.BUFFERED)
 
+    private var pollingJob: Job? = null
+
     init {
         loadData()
+        startJobPolling()
+    }
+
+    private fun startJobPolling() {
+        pollingJob?.cancel()
+        pollingJob = scope.launch {
+            while (isActive) {
+                delay(5_000)
+                val jobs = trainingRepository.getJobs()
+                _state.value = _state.value.copy(
+                    jobs = jobs.getOrNull() ?: _state.value.jobs,
+                )
+            }
+        }
     }
 
     private fun loadData() {

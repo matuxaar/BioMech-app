@@ -24,6 +24,7 @@ import com.biomech.domain.model.Device
 import com.biomech.domain.model.DeviceType
 import com.biomech.feature.devices.AddDeviceBottomSheet
 import com.biomech.feature.devices.DeviceDetailSheet
+import com.biomech.app.rememberCsvShareLauncher
 import com.biomech.feature.devices.DevicesAction
 import com.biomech.feature.devices.DevicesEvent
 import com.biomech.feature.devices.DevicesViewModel
@@ -106,6 +107,7 @@ fun MainScreen(
 
     var streamingEnabled by remember { mutableStateOf(false) }
     var streamingConnected by remember { mutableStateOf(false) }
+    val csvShareLauncher = rememberCsvShareLauncher()
 
     LaunchedEffect(Unit) {
         if (!isOffline) {
@@ -287,7 +289,7 @@ fun MainScreen(
                         savedRecordings = savedRecordings + file
                     },
                     onDownload = { file ->
-                        // TODO: actual file export — save to external storage
+                        csvShareLauncher(file.fileName, file.csvBytes)
                     },
                 )
             }

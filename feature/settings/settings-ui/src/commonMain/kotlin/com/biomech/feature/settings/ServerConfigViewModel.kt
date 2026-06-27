@@ -52,7 +52,11 @@ class ServerConfigViewModel(
     }
 
     private suspend fun testConnection() {
-        val url = _state.value.serverUrl.trimEnd('/')
+        var url = _state.value.serverUrl.trimEnd('/')
+        if (url.startsWith("https://")) {
+            url = "http://" + url.removePrefix("https://")
+            _state.value = _state.value.copy(serverUrl = url)
+        }
         _state.value = _state.value.copy(connectionStatus = ConnectionStatus.Testing)
 
         val candidates = listOf(

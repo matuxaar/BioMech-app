@@ -31,7 +31,7 @@ actual val repositoriesModule: Module = module {
 }
 
 actual val platformModule: Module = module {
-    single<BleManager> { AndroidBleManager() }
+    single<BleManager> { AndroidBleManager(get()) }
     single<AppDatabase> { createRoomDatabase(get()) }
 }
 
