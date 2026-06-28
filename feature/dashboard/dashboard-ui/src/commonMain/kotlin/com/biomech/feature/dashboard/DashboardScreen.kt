@@ -23,11 +23,17 @@ fun DashboardScreen(
     onStopRecording: () -> Unit,
     onNavigateToTraining: () -> Unit = {},
     onSendActionCode: (Int) -> Unit = {},
+    onBack: () -> Unit = {},
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(AppResources.strings.dashboardTitle) },
+                navigationIcon = {
+                    TextButton(onClick = onBack) {
+                        Text("\u2190 " + AppResources.strings.back)
+                    }
+                },
                 actions = {
                     if (predictionLabel != null) {
                         Text(

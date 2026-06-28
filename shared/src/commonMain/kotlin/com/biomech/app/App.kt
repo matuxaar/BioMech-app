@@ -188,6 +188,7 @@ fun App() {
                             onStopRecording = { viewModel.dispatch(DashboardAction.StopRecording) },
                             onNavigateToTraining = { navigator.navigateTo(Screen.Training) },
                             onSendActionCode = { viewModel.dispatch(DashboardAction.SendActionCode(it)) },
+                            onBack = { navigator.goBack() },
                         )
                     }
 
