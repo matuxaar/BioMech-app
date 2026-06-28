@@ -13,31 +13,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.biomech.core.resource.AppResources
 import com.biomech.domain.model.Device
+import com.biomech.domain.model.DeviceAction
 import com.biomech.domain.model.DeviceType
 
-private data class Gesture(
-    val name: String,
-    val emoji: String,
-    val accuracy: Double?,
-)
-
-private val sampleGestures = listOf(
-    Gesture(AppResources.strings.gestureRest, "\u270B", 0.95),
-    Gesture(AppResources.strings.gestureFist, "\u270A", 0.92),
-    Gesture(AppResources.strings.gestureOpen, "\uD83D\uDD90\uFE0F", 0.88),
-    Gesture(AppResources.strings.gesturePinch, "\uD83E\uDD1F", 0.75),
-    Gesture(AppResources.strings.gesturePoint, "\u261D\uFE0F", 0.70),
-)
-
-private fun deviceEmoji(type: DeviceType): String = when (type) {
-    DeviceType.PROSTHETIC -> "\uD83E\uDDBE"
-    DeviceType.SENSOR -> "\u2699\uFE0F"
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DeviceDetailSheet(
     device: Device,
+    deviceActions: List<DeviceAction> = emptyList(),
+    isLoadingActions: Boolean = false,
     onDismiss: () -> Unit,
 ) {
     Column(
@@ -80,19 +63,40 @@ fun DeviceDetailSheet(
         )
         Spacer(Modifier.height(12.dp))
 
-        LazyHorizontalGrid(
-            rows = GridCells.Fixed(2),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(180.dp),
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            items(sampleGestures) { gesture ->
-                GestureCard(
-                    gesture = gesture,
-                    onClick = { /* TODO: call /api/v1/predict when endpoint is available */ },
+        if (isLoadingActions) {
+            Box(
+                modifier = Modifier.fillMaxWidth().height(180.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                CircularProgressIndicator()
+            }
+        } else if (deviceActions.isEmpty()) {
+            Box(
+                modifier = Modifier.fillMaxWidth().height(80.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    "No trained actions",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+            }
+        } else {
+            LazyHorizontalGrid(
+                rows = GridCells.Fixed(2),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(180.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                items(deviceActions) { action ->
+                    GestureCard(
+                        name = action.name,
+                        emoji = action.emoji,
+                        accuracy = action.accuracy,
+                    )
+                }
             }
         }
 
@@ -107,13 +111,18 @@ fun DeviceDetailSheet(
     }
 }
 
+private fun deviceEmoji(type: DeviceType): String = when (type) {
+    DeviceType.PROSTHETIC -> "\uD83E\uDDBE"
+    DeviceType.SENSOR -> "\u2699\uFE0F"
+}
+
 @Composable
 private fun GestureCard(
-    gesture: Gesture,
-    onClick: () -> Unit,
+    name: String,
+    emoji: String,
+    accuracy: Double?,
 ) {
     Card(
-        onClick = onClick,
         modifier = Modifier.height(80.dp),
     ) {
         Row(
@@ -122,16 +131,16 @@ private fun GestureCard(
                 .padding(horizontal = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(gesture.emoji, fontSize = 28.sp)
+            Text(emoji, fontSize = 28.sp)
             Spacer(Modifier.width(10.dp))
             Column {
                 Text(
-                    gesture.name,
+                    name,
                     style = MaterialTheme.typography.titleSmall,
                 )
-                if (gesture.accuracy != null) {
+                if (accuracy != null) {
                     Text(
-                        AppResources.strings.accuracy((gesture.accuracy * 100).toInt()),
+                        AppResources.strings.accuracy((accuracy * 100).toInt()),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )

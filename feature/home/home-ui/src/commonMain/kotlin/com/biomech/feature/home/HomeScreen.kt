@@ -34,7 +34,7 @@ private fun deviceEmoji(type: DeviceType): String = when (type) {
     DeviceType.SENSOR -> "\u2699\uFE0F"
 }
 
-private enum class MenuAction { TRAINING, RECORD, EDIT, DELETE }
+private enum class MenuAction { DASHBOARD, TRAINING, RECORD, EDIT, DELETE }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -46,6 +46,7 @@ fun HomeScreen(
     onEditDevice: ((Device) -> Unit)? = null,
     onDeleteDevice: ((Device) -> Unit)? = null,
     onNavigateToTraining: ((Device) -> Unit)? = null,
+    onNavigateToDashboard: ((Device) -> Unit)? = null,
     onRecord: ((Device) -> Unit)? = null,
 ) {
     Scaffold(
@@ -85,6 +86,7 @@ fun HomeScreen(
                         onEditDevice = onEditDevice,
                         onDeleteDevice = onDeleteDevice,
                         onNavigateToTraining = onNavigateToTraining,
+                        onNavigateToDashboard = onNavigateToDashboard,
                         onRecord = onRecord,
                     )
                 }
@@ -107,6 +109,7 @@ fun HomeScreen(
                         onEditDevice = onEditDevice,
                         onDeleteDevice = onDeleteDevice,
                         onNavigateToTraining = onNavigateToTraining,
+                        onNavigateToDashboard = onNavigateToDashboard,
                         onRecord = onRecord,
                     )
                 }
@@ -160,7 +163,7 @@ private fun ListAddCard(onAddDevice: () -> Unit) {
 }
 
 private fun menuActionsForDevice(device: Device): List<Pair<MenuAction, String>> {
-    return when (device.type) {
+    val base = when (device.type) {
         DeviceType.PROSTHETIC -> listOf(
             MenuAction.TRAINING to "\uD83C\uDFAF",
             MenuAction.EDIT to "\u270F\uFE0F",
@@ -172,6 +175,7 @@ private fun menuActionsForDevice(device: Device): List<Pair<MenuAction, String>>
             MenuAction.DELETE to "\uD83D\uDDD1\uFE0F",
         )
     }
+    return listOf(MenuAction.DASHBOARD to "\uD83D\uDCCA") + base
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -182,6 +186,7 @@ private fun GridDeviceCard(
     onEditDevice: ((Device) -> Unit)?,
     onDeleteDevice: ((Device) -> Unit)?,
     onNavigateToTraining: ((Device) -> Unit)?,
+    onNavigateToDashboard: ((Device) -> Unit)?,
     onRecord: ((Device) -> Unit)?,
 ) {
     var showMenu by remember { mutableStateOf(false) }
@@ -253,6 +258,7 @@ private fun GridDeviceCard(
                     val onClick: () -> Unit = {
                         showMenu = false
                         when (action) {
+                            MenuAction.DASHBOARD -> onNavigateToDashboard?.invoke(device)
                             MenuAction.TRAINING -> onNavigateToTraining?.invoke(device)
                             MenuAction.RECORD -> onRecord?.invoke(device)
                             MenuAction.EDIT -> onEditDevice?.invoke(device)
@@ -262,6 +268,7 @@ private fun GridDeviceCard(
                     ActionCard(
                         emoji = emoji,
                         text = when (action) {
+                            MenuAction.DASHBOARD -> AppResources.strings.dashboard
                             MenuAction.TRAINING -> AppResources.strings.training
                             MenuAction.RECORD -> AppResources.strings.record
                             MenuAction.EDIT -> AppResources.strings.edit
@@ -283,6 +290,7 @@ private fun ListDeviceCard(
     onEditDevice: ((Device) -> Unit)?,
     onDeleteDevice: ((Device) -> Unit)?,
     onNavigateToTraining: ((Device) -> Unit)?,
+    onNavigateToDashboard: ((Device) -> Unit)?,
     onRecord: ((Device) -> Unit)?,
 ) {
     var showMenu by remember { mutableStateOf(false) }
@@ -348,6 +356,7 @@ private fun ListDeviceCard(
                     val onClick: () -> Unit = {
                         showMenu = false
                         when (action) {
+                            MenuAction.DASHBOARD -> onNavigateToDashboard?.invoke(device)
                             MenuAction.TRAINING -> onNavigateToTraining?.invoke(device)
                             MenuAction.RECORD -> onRecord?.invoke(device)
                             MenuAction.EDIT -> onEditDevice?.invoke(device)
@@ -357,6 +366,7 @@ private fun ListDeviceCard(
                     ActionCard(
                         emoji = emoji,
                         text = when (action) {
+                            MenuAction.DASHBOARD -> AppResources.strings.dashboard
                             MenuAction.TRAINING -> AppResources.strings.training
                             MenuAction.RECORD -> AppResources.strings.record
                             MenuAction.EDIT -> AppResources.strings.edit

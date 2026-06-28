@@ -8,6 +8,7 @@ import android.bluetooth.le.ScanSettings
 import android.content.Context
 import android.os.Build
 import com.biomech.domain.model.EMGSample
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.nio.ByteBuffer
@@ -149,36 +150,35 @@ class AndroidBleManager(private val context: Context) : BleManager {
     @SuppressLint("MissingPermission")
     override suspend fun discoverCharacteristics(deviceId: String): List<BleCharacteristicInfo> {
         val device = bluetoothAdapter.getRemoteDevice(deviceId)
-        var result = listOf<BleCharacteristicInfo>()
-        val lock = Object()
-
-        val tempGatt = device.connectGatt(context, false, object : BluetoothGattCallback() {
-            override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
-                if (newState == BluetoothProfile.STATE_CONNECTED) {
-                    gatt.discoverServices()
-                }
-            }
-
-            override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
-                val chars = mutableListOf<BleCharacteristicInfo>()
-                for (service in gatt.services) {
-                    for (char in service.characteristics) {
-                        chars.add(BleCharacteristicInfo(
-                            serviceUuid = service.uuid.toString(),
-                            charUuid = char.uuid.toString(),
-                            supportsNotify = (char.properties and BluetoothGattCharacteristic.PROPERTY_NOTIFY) != 0,
-                            supportsWrite = (char.properties and BluetoothGattCharacteristic.PROPERTY_WRITE) != 0,
-                        ))
+        return suspendCancellableCoroutine { cont ->
+            val tempGatt = device.connectGatt(context, false, object : BluetoothGattCallback() {
+                override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
+                    if (newState == BluetoothProfile.STATE_CONNECTED) {
+                        gatt.discoverServices()
                     }
                 }
-                result = chars
-                gatt.disconnect()
-                gatt.close()
-                synchronized(lock) { lock.notify() }
-            }
-        })
 
-        synchronized(lock) { lock.wait(10_000) }
-        return result
+                override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
+                    val chars = mutableListOf<BleCharacteristicInfo>()
+                    for (service in gatt.services) {
+                        for (char in service.characteristics) {
+                            chars.add(BleCharacteristicInfo(
+                                serviceUuid = service.uuid.toString(),
+                                charUuid = char.uuid.toString(),
+                                supportsNotify = (char.properties and BluetoothGattCharacteristic.PROPERTY_NOTIFY) != 0,
+                                supportsWrite = (char.properties and BluetoothGattCharacteristic.PROPERTY_WRITE) != 0,
+                            ))
+                        }
+                    }
+                    gatt.disconnect()
+                    gatt.close()
+                    if (cont.isActive) cont.resume(chars) { gatt.close() }
+                }
+            })
+            cont.invokeOnCancellation {
+                tempGatt?.disconnect()
+                tempGatt?.close()
+            }
+        }
     }
 }

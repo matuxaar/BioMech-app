@@ -21,7 +21,9 @@ import com.biomech.core.navigation.Screen
 import com.biomech.core.resource.AppResources
 import com.biomech.core.resource.Locale
 import com.biomech.domain.model.Device
+import com.biomech.domain.model.DeviceAction
 import com.biomech.domain.model.DeviceType
+import com.biomech.domain.repository.DeviceRepository
 import com.biomech.feature.devices.AddDeviceBottomSheet
 import com.biomech.feature.devices.DeviceDetailSheet
 import com.biomech.app.rememberCsvShareLauncher
@@ -29,6 +31,7 @@ import com.biomech.feature.devices.DevicesAction
 import com.biomech.feature.devices.DevicesEvent
 import com.biomech.feature.devices.DevicesViewModel
 import com.biomech.feature.devices.EditDeviceBottomSheet
+import com.biomech.core.common.AppResult
 import com.biomech.core.common.currentTimeMillis
 import com.biomech.feature.home.HomeAction
 import com.biomech.feature.home.HomeViewModel
@@ -87,7 +90,10 @@ fun MainScreen(
     var showRecordSheet by remember { mutableStateOf(false) }
     var recordingDevice by remember { mutableStateOf<Device?>(null) }
     var savedRecordings by remember { mutableStateOf(listOf<RecordedFile>()) }
+    var selectedDeviceActions by remember { mutableStateOf<List<DeviceAction>>(emptyList()) }
+    var isLoadingDeviceActions by remember { mutableStateOf(false) }
 
+    val deviceRepository: DeviceRepository = koinInject()
     val homeViewModel: HomeViewModel = koinInject()
     val homeState by homeViewModel.state.collectAsState()
 
@@ -193,12 +199,28 @@ fun MainScreen(
     }
 
     selectedDevice?.let { device ->
+        LaunchedEffect(device.id) {
+            isLoadingDeviceActions = true
+            when (val result = deviceRepository.getDeviceActions(device.id)) {
+                is AppResult.Success -> selectedDeviceActions = result.data
+                is AppResult.Error -> selectedDeviceActions = emptyList()
+            }
+            isLoadingDeviceActions = false
+        }
         ModalBottomSheet(
-            onDismissRequest = { selectedDevice = null }
+            onDismissRequest = {
+                selectedDevice = null
+                selectedDeviceActions = emptyList()
+            }
         ) {
             DeviceDetailSheet(
                 device = device,
-                onDismiss = { selectedDevice = null },
+                deviceActions = selectedDeviceActions,
+                isLoadingActions = isLoadingDeviceActions,
+                onDismiss = {
+                    selectedDevice = null
+                    selectedDeviceActions = emptyList()
+                },
             )
         }
     }
@@ -332,6 +354,9 @@ fun MainScreen(
                         onAddDevice = { showAddDeviceSheet = true },
                         onDeviceClick = { device -> selectedDevice = device },
                         onNavigateToTraining = { navigator.navigateTo(Screen.Training) },
+                        onNavigateToDashboard = { device ->
+                            navigator.navigateTo(Screen.Dashboard(device.id))
+                        },
                         onEditDevice = { device ->
                             editingDevice = device
                             showEditSheet = true

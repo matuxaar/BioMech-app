@@ -167,9 +167,16 @@ fun App() {
                         )
                     }
 
-                    Screen.Dashboard -> {
+                    is Screen.Dashboard -> {
                         val viewModel: DashboardViewModel = koinInject()
                         val state by viewModel.state.collectAsState()
+
+                        LaunchedEffect(Unit) {
+                            val deviceId = (navigator.currentScreen as? Screen.Dashboard)?.deviceId
+                            if (!deviceId.isNullOrBlank()) {
+                                viewModel.dispatch(DashboardAction.SelectDevice(deviceId))
+                            }
+                        }
 
                         DashboardScreen(
                             deviceConnected = state.deviceConnected,
