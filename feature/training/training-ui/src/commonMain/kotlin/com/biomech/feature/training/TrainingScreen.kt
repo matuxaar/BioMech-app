@@ -38,7 +38,7 @@ fun TrainingScreen(
                 title = { Text(AppResources.strings.trainingTitle) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Text("<")
+                        Text("\u2190")
                     }
                 },
             )

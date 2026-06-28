@@ -30,8 +30,8 @@ fun DashboardScreen(
             TopAppBar(
                 title = { Text(AppResources.strings.dashboardTitle) },
                 navigationIcon = {
-                    TextButton(onClick = onBack) {
-                        Text("\u2190 " + AppResources.strings.back)
+                    IconButton(onClick = onBack) {
+                        Text("\u2190")
                     }
                 },
                 actions = {

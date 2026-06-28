@@ -25,8 +25,8 @@ fun ServerConfigScreen(
                         .padding(start = 4.dp, end = 16.dp, top = 6.dp, bottom = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    TextButton(onClick = onBack) {
-                        Text(AppResources.strings.back)
+                    IconButton(onClick = onBack) {
+                        Text("\u2190")
                     }
                     Spacer(Modifier.width(4.dp))
                     Text(
