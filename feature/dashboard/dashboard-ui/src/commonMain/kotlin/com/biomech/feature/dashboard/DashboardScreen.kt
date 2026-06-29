@@ -17,7 +17,7 @@ import com.biomech.domain.model.DeviceAction
 @Composable
 fun DashboardScreen(
     deviceConnected: Boolean,
-    emgData: List<Float>,
+    emgData: List<List<Float>>,
     predictionLabel: String?,
     streamConnected: Boolean,
     deviceActions: List<DeviceAction> = emptyList(),
@@ -83,7 +83,6 @@ fun DashboardScreen(
                         Spacer(Modifier.height(8.dp))
                         EMGChart(
                             data = emgData,
-                            modifier = Modifier.height(200.dp)
                         )
                     }
                 }

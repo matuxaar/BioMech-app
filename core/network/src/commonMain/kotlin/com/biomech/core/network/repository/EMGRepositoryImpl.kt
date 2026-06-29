@@ -1,8 +1,12 @@
 package com.biomech.core.network.repository
 
 import com.biomech.core.common.AppResult
+import com.biomech.core.common.currentTimeMillis
 import com.biomech.core.network.api.EMGApi
+import com.biomech.core.network.dto.BatchSamplesRequest
 import com.biomech.core.network.dto.CreateSessionRequest
+import com.biomech.core.network.dto.SampleRequest
+import com.biomech.domain.model.EMGSample
 import com.biomech.domain.model.EMGSession
 import com.biomech.domain.repository.EMGRepository
 
@@ -30,6 +34,16 @@ open class EMGRepositoryImpl(
         }
     }
 
+    override suspend fun addSamplesBatch(sessionId: String, samples: List<EMGSample>): AppResult<Unit> {
+        return try {
+            val request = BatchSamplesRequest(samples.map { it.toDto() })
+            emgApi.addSamplesBatch(sessionId, request)
+            AppResult.Success(Unit)
+        } catch (e: Exception) {
+            AppResult.Error(e.message ?: "Failed to add samples")
+        }
+    }
+
     override suspend fun getSessions(): AppResult<List<EMGSession>> {
         return try {
             val dtos = emgApi.getSessions()
@@ -52,4 +66,16 @@ internal fun com.biomech.core.network.dto.SessionDto.toDomain() = EMGSession(
     label = label,
     startedAt = 0L,
     endedAt = null,
+)
+
+internal fun EMGSample.toDto() = SampleRequest(
+    timestamp = currentTimeMillis().toString(),
+    channel_1 = channel1,
+    channel_2 = channel2,
+    channel_3 = channel3,
+    channel_4 = channel4,
+    channel_5 = channel5,
+    channel_6 = channel6,
+    channel_7 = channel7,
+    channel_8 = channel8,
 )

@@ -14,15 +14,17 @@ import com.biomech.domain.model.Device
 import com.biomech.domain.model.DeviceAction
 import com.biomech.domain.model.EMGSample
 import com.biomech.domain.repository.DeviceRepository
-import com.biomech.domain.usecase.StartEMGSessionUseCase
+import com.biomech.domain.repository.EMGRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 data class DashboardState(
     val deviceConnected: Boolean = false,
-    val emgData: List<Float> = emptyList(),
+    val emgData: List<List<Float>> = List(8) { emptyList() },
     val isRecording: Boolean = false,
     val predictionLabel: String? = null,
     val streamConnected: Boolean = false,
@@ -43,7 +45,7 @@ sealed class DashboardEvent : BaseEvent
 
 class DashboardViewModel(
     private val bleManager: BleManager,
-    private val startSessionUseCase: StartEMGSessionUseCase,
+    private val emgRepository: EMGRepository,
     private val deviceRepository: DeviceRepository,
 ) : BaseViewModel<DashboardState, DashboardAction, DashboardEvent>() {
 
@@ -53,6 +55,9 @@ class DashboardViewModel(
     private val predictClient = PredictStreamClient()
     private val buffer = mutableListOf<StreamSample>()
     private var streamJob: Job? = null
+    private var currentSessionId: String? = null
+    private val sampleBuffer = mutableListOf<EMGSample>()
+    private var sampleBatchJob: Job? = null
 
     init {
         scope.launch {
@@ -64,10 +69,19 @@ class DashboardViewModel(
         }
         scope.launch {
             bleManager.emgDataStream.collect { sample ->
-                val data = _state.value.emgData.toMutableList()
-                data.add(sample.channel1)
-                if (data.size > 200) data.removeAt(0)
-                _state.value = _state.value.copy(emgData = data)
+                val data = _state.value.emgData.map { it.toMutableList() }.toMutableList()
+                data[0].add(sample.channel1)
+                data[1].add(sample.channel2)
+                data[2].add(sample.channel3)
+                data[3].add(sample.channel4)
+                data[4].add(sample.channel5)
+                data[5].add(sample.channel6)
+                data[6].add(sample.channel7)
+                data[7].add(sample.channel8)
+                val trimmed = data.map { ch ->
+                    if (ch.size > 200) ch.drop(1) else ch
+                }
+                _state.value = _state.value.copy(emgData = trimmed)
             }
         }
         scope.launch {
@@ -87,18 +101,43 @@ class DashboardViewModel(
     override suspend fun handleAction(action: DashboardAction) {
         when (action) {
             DashboardAction.StartRecording -> {
+                val deviceId = _state.value.connectedDeviceId
+                if (deviceId.isBlank()) return
                 _state.value = _state.value.copy(isRecording = true)
+
+                val sessionResult = emgRepository.startSession(deviceId, "live_recording")
+                val sessionId = when (sessionResult) {
+                    is AppResult.Success -> sessionResult.data.id
+                    is AppResult.Error -> {
+                        _state.value = _state.value.copy(isRecording = false)
+                        return
+                    }
+                }
+                currentSessionId = sessionId
+
                 val connected = predictClient.connect(scope)
                 _state.value = _state.value.copy(streamConnected = connected)
-                if (connected) {
-                    streamJob = scope.launch {
-                        bleManager.emgDataStream.collect { sample ->
-                            buffer.add(sample.toStreamSample())
-                            if (buffer.size >= 32) {
-                                predictClient.send(buffer.toList())
-                                buffer.clear()
-                            }
+
+                streamJob = scope.launch {
+                    bleManager.emgDataStream.collect { sample ->
+                        sampleBuffer.add(sample)
+                        buffer.add(sample.toStreamSample())
+                        if (buffer.size >= 32) {
+                            val batch = buffer.toList()
+                            buffer.clear()
+                            if (connected) predictClient.send(batch)
                         }
+                    }
+                }
+
+                sampleBatchJob = scope.launch {
+                    while (isActive) {
+                        if (sampleBuffer.isNotEmpty()) {
+                            val batch = sampleBuffer.toList()
+                            sampleBuffer.clear()
+                            emgRepository.addSamplesBatch(sessionId, batch)
+                        }
+                        delay(1000)
                     }
                 }
             }
@@ -106,7 +145,22 @@ class DashboardViewModel(
                 _state.value = _state.value.copy(isRecording = false)
                 streamJob?.cancel()
                 streamJob = null
+                sampleBatchJob?.cancel()
+                sampleBatchJob = null
                 buffer.clear()
+
+                if (sampleBuffer.isNotEmpty()) {
+                    currentSessionId?.let { sessionId ->
+                        emgRepository.addSamplesBatch(sessionId, sampleBuffer.toList())
+                    }
+                    sampleBuffer.clear()
+                }
+
+                currentSessionId?.let { sessionId ->
+                    emgRepository.endSession(sessionId)
+                }
+                currentSessionId = null
+
                 predictClient.disconnect()
                 _state.value = _state.value.copy(
                     streamConnected = false,

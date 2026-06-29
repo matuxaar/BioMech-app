@@ -1,7 +1,7 @@
 package com.biomech.core.di
 
 import com.biomech.core.ble.BleManager
-import com.biomech.core.ble.IosBleManager
+import com.biomech.core.ble.SimulatedBleManager
 import com.biomech.core.common.PlatformContext
 import com.biomech.core.network.api.EMGApi
 import com.biomech.core.network.repository.AuthRepositoryImpl
@@ -26,7 +26,7 @@ actual val repositoriesModule: Module = module {
 }
 
 actual val platformModule: Module = module {
-    single<BleManager> { IosBleManager() }
+    single<BleManager> { SimulatedBleManager() }
 }
 
 actual fun initKoin(context: PlatformContext) {

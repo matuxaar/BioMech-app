@@ -1,7 +1,7 @@
 package com.biomech.core.di
 
-import com.biomech.core.ble.AndroidBleManager
 import com.biomech.core.ble.BleManager
+import com.biomech.core.ble.SimulatedBleManager
 import com.biomech.core.common.PlatformContext
 import com.biomech.core.database.AppDatabase
 import com.biomech.core.database.createRoomDatabase
@@ -31,7 +31,7 @@ actual val repositoriesModule: Module = module {
 }
 
 actual val platformModule: Module = module {
-    single<BleManager> { AndroidBleManager(get()) }
+    single<BleManager> { SimulatedBleManager() }
     single<AppDatabase> { createRoomDatabase(get()) }
 }
 
