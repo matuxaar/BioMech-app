@@ -17,6 +17,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(project(":feature:training:training-domain"))
+            implementation(project(":feature:devices:devices-domain"))
             implementation(project(":domain"))
             implementation(project(":core:mvi"))
             implementation(project(":core:base"))

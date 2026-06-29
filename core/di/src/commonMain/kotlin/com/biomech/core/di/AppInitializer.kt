@@ -29,7 +29,7 @@ val viewModelsModule: Module = module {
     factory { SettingsViewModel(get(), get()) }
     factory { ServerConfigViewModel(get()) }
     factory { DevicesViewModel(get(), get()) }
-    factory { TrainingViewModel(get(), get()) }
+    factory { TrainingViewModel(get(), get(), get()) }
 }
 
 val useCasesModule: Module = module {

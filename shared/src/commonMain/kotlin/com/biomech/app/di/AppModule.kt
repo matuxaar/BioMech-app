@@ -48,7 +48,7 @@ val sharedModule = module {
     factory { DevicesViewModel(get(), get()) }
     factory { HomeViewModel(get()) }
     factory { ProfileViewModel(get()) }
-    factory { TrainingViewModel(get(), get()) }
+    factory { TrainingViewModel(get(), get(), get()) }
     factory { SettingsViewModel(get(), get()) }
     factory { ServerConfigViewModel(get()) }
 }

@@ -5,9 +5,11 @@ import com.biomech.core.mvi.BaseAction
 import com.biomech.core.mvi.BaseEvent
 import com.biomech.core.mvi.BaseState
 import com.biomech.core.mvi.BaseViewModel
+import com.biomech.domain.model.Device
 import com.biomech.domain.model.EMGSession
 import com.biomech.domain.model.TrainingFile
 import com.biomech.domain.model.TrainingJob
+import com.biomech.domain.repository.DeviceRepository
 import com.biomech.domain.repository.EMGRepository
 import com.biomech.domain.repository.TrainingRepository
 import kotlinx.coroutines.Job
@@ -27,6 +29,8 @@ data class TrainingState(
     val isUploading: Boolean = false,
     val uploadError: String? = null,
     val selectedTab: Int = 0,
+    val devices: List<Device> = emptyList(),
+    val selectedDeviceId: String? = null,
 ) : BaseState
 
 sealed class TrainingAction : BaseAction {
@@ -36,6 +40,7 @@ sealed class TrainingAction : BaseAction {
     data object LoadFiles : TrainingAction()
     data class DeleteFile(val fileId: String) : TrainingAction()
     data class SelectTab(val index: Int) : TrainingAction()
+    data class SelectDevice(val deviceId: String?) : TrainingAction()
 }
 
 sealed class TrainingEvent : BaseEvent {
@@ -46,6 +51,7 @@ sealed class TrainingEvent : BaseEvent {
 class TrainingViewModel(
     private val trainingRepository: TrainingRepository,
     private val emgRepository: EMGRepository,
+    private val deviceRepository: DeviceRepository,
 ) : BaseViewModel<TrainingState, TrainingAction, TrainingEvent>() {
 
     override val _state = MutableStateFlow(TrainingState())
@@ -76,11 +82,14 @@ class TrainingViewModel(
             val sessions = emgRepository.getSessions()
             val jobs = trainingRepository.getJobs()
             val files = trainingRepository.getFiles()
+            val devicesResult = deviceRepository.getDevices()
+            val devices = devicesResult.getOrNull() ?: emptyList()
 
             _state.value = _state.value.copy(
                 sessions = sessions.getOrNull() ?: emptyList(),
                 jobs = jobs.getOrNull() ?: emptyList(),
                 files = files.getOrNull() ?: emptyList(),
+                devices = devices,
             )
         }
     }
@@ -140,6 +149,9 @@ class TrainingViewModel(
             }
             is TrainingAction.SelectTab -> {
                 _state.value = _state.value.copy(selectedTab = action.index)
+            }
+            is TrainingAction.SelectDevice -> {
+                _state.value = _state.value.copy(selectedDeviceId = action.deviceId)
             }
         }
     }

@@ -4,6 +4,7 @@ import android.content.ContentValues
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
+import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import java.io.File
@@ -33,6 +34,7 @@ actual fun rememberCsvDownloader(): (name: String, bytes: ByteArray) -> Unit {
                 val file = File(downloadsDir, name)
                 file.writeBytes(bytes)
             }
+            Toast.makeText(context, "Saved to Downloads: $name", Toast.LENGTH_SHORT).show()
         } catch (_: Exception) { }
     }
 }

@@ -11,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.biomech.core.resource.AppResources
+import com.biomech.domain.model.Device
 import com.biomech.domain.model.EMGSession
 import com.biomech.domain.model.TrainingFile
 import com.biomech.domain.model.TrainingJob
@@ -27,12 +28,15 @@ fun TrainingScreen(
     isUploading: Boolean = false,
     uploadError: String? = null,
     selectedTab: Int = 0,
+    devices: List<Device> = emptyList(),
+    selectedDeviceId: String? = null,
     onBack: () -> Unit = {},
     onToggleSession: (String) -> Unit,
     onStartTraining: () -> Unit,
     onSelectTab: (Int) -> Unit = {},
     onDeleteFile: (String) -> Unit = {},
     onUploadClick: () -> Unit = {},
+    onSelectDevice: (String?) -> Unit = {},
 ) {
     Scaffold(
         topBar = {
@@ -78,8 +82,11 @@ fun TrainingScreen(
                     files = files,
                     isUploading = isUploading,
                     uploadError = uploadError,
+                    devices = devices,
+                    selectedDeviceId = selectedDeviceId,
                     onDeleteFile = onDeleteFile,
                     onUploadClick = onUploadClick,
+                    onSelectDevice = onSelectDevice,
                 )
             }
         }
@@ -196,13 +203,17 @@ private fun SessionsTab(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun FilesTab(
     files: List<TrainingFile>,
     isUploading: Boolean,
     uploadError: String?,
+    devices: List<Device> = emptyList(),
+    selectedDeviceId: String? = null,
     onDeleteFile: (String) -> Unit,
     onUploadClick: () -> Unit,
+    onSelectDevice: (String?) -> Unit = {},
 ) {
     Column(
         modifier = Modifier
@@ -221,6 +232,39 @@ private fun FilesTab(
                 style = MaterialTheme.typography.bodySmall,
             )
             Spacer(Modifier.height(8.dp))
+        }
+
+        if (devices.isNotEmpty()) {
+            var expanded by remember { mutableStateOf(false) }
+            ExposedDropdownMenuBox(
+                expanded = expanded,
+                onExpandedChange = { expanded = it },
+            ) {
+                OutlinedTextField(
+                    value = devices.firstOrNull { it.id == selectedDeviceId }?.name
+                        ?: devices.first().name,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text(AppResources.strings.devices) },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                    modifier = Modifier.fillMaxWidth().menuAnchor(),
+                )
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                ) {
+                    devices.forEach { device ->
+                        DropdownMenuItem(
+                            text = { Text(device.name) },
+                            onClick = {
+                                onSelectDevice(device.id)
+                                expanded = false
+                            },
+                        )
+                    }
+                }
+            }
+            Spacer(Modifier.height(12.dp))
         }
 
         Button(

@@ -196,7 +196,9 @@ fun App() {
                         val viewModel: TrainingViewModel = koinInject()
                         val state by viewModel.state.collectAsState()
                         val pickFile = rememberFilePickerLauncher { bytes, fileName ->
-                            viewModel.dispatch(TrainingAction.UploadFile("", "", bytes, fileName))
+                            viewModel.dispatch(TrainingAction.UploadFile(
+                                state.selectedDeviceId ?: "", "", bytes, fileName
+                            ))
                         }
 
                         TrainingScreen(
@@ -209,12 +211,15 @@ fun App() {
                             isUploading = state.isUploading,
                             uploadError = state.uploadError,
                             selectedTab = state.selectedTab,
+                            devices = state.devices,
+                            selectedDeviceId = state.selectedDeviceId,
                             onBack = { navigator.goBack() },
                             onToggleSession = { viewModel.dispatch(TrainingAction.ToggleSession(it)) },
                             onStartTraining = { viewModel.dispatch(TrainingAction.StartTraining) },
                             onSelectTab = { viewModel.dispatch(TrainingAction.SelectTab(it)) },
                             onDeleteFile = { viewModel.dispatch(TrainingAction.DeleteFile(it)) },
                             onUploadClick = { pickFile() },
+                            onSelectDevice = { viewModel.dispatch(TrainingAction.SelectDevice(it)) },
                         )
                     }
                 }
