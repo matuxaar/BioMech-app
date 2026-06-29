@@ -52,6 +52,14 @@ fun DeviceDetailSheet(
                 DetailRow(AppResources.strings.hardwareVersion, device.hwVersion)
                 HorizontalDivider(modifier = Modifier.padding(vertical = 10.dp))
                 DetailRow(AppResources.strings.id, device.id.take(8) + "...")
+                if (device.lastRecordingAt != null) {
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 10.dp))
+                    DetailRow(AppResources.strings.lastRecording, formatTimestamp(device.lastRecordingAt))
+                }
+                if (device.lastTrainingAt != null) {
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 10.dp))
+                    DetailRow(AppResources.strings.lastTraining, formatTimestamp(device.lastTrainingAt))
+                }
             }
         }
 
@@ -114,6 +122,14 @@ fun DeviceDetailSheet(
 private fun deviceEmoji(type: DeviceType): String = when (type) {
     DeviceType.PROSTHETIC -> "\uD83E\uDDBE"
     DeviceType.SENSOR -> "\u2699\uFE0F"
+}
+
+private fun formatTimestamp(iso: String): String {
+    return try {
+        iso.substringAfter("T").take(8)
+    } catch (_: Exception) {
+        iso
+    }
 }
 
 @Composable

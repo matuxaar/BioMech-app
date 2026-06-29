@@ -8,5 +8,5 @@ actual fun createRoomDatabase(context: PlatformContext): AppDatabase {
         context.androidContext,
         AppDatabase::class.java,
         "biomech_cache.db",
-    ).build()
+    ).fallbackToDestructiveMigration().build()
 }

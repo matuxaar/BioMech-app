@@ -9,6 +9,8 @@ data class Device(
     val bleCommandCharUuid: String = "",
     val bleStatusCharUuid: String = "",
     val bleEmgCharUuid: String = "",
+    val lastRecordingAt: String? = null,
+    val lastTrainingAt: String? = null,
 )
 
 enum class DeviceType { PROSTHETIC, SENSOR }

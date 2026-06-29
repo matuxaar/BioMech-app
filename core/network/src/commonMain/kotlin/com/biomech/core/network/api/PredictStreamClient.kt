@@ -39,6 +39,7 @@ data class StreamPredictResponse(
 class PredictStreamClient {
     private val json = Json { ignoreUnknownKeys = true }
     private var session: WebSocketSession? = null
+    private var client: HttpClient? = null
     private val _predictions = MutableSharedFlow<String>(extraBufferCapacity = 64)
     val predictions: SharedFlow<String> = _predictions.asSharedFlow()
 
@@ -50,10 +51,11 @@ class PredictStreamClient {
             .trimEnd('/') + "/predict/ws?token=$token"
 
         try {
-            val client = HttpClient {
+            val httpClient = HttpClient {
                 install(WebSockets)
             }
-            session = client.webSocketSession(wsUrl)
+            client = httpClient
+            session = httpClient.webSocketSession(wsUrl)
             scope.launch {
                 try {
                     for (frame in session!!.incoming) {
@@ -82,12 +84,14 @@ class PredictStreamClient {
         } catch (_: Exception) { }
     }
 
-    fun disconnect() {
-        session?.let {
-            try {
-                runBlocking { it.close() }
-            } catch (_: Exception) { }
-        }
+    suspend fun disconnect() {
+        try {
+            session?.close()
+        } catch (_: Exception) { }
         session = null
+        try {
+            client?.close()
+        } catch (_: Exception) { }
+        client = null
     }
 }

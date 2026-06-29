@@ -31,6 +31,7 @@ data class TrainingState(
     val selectedTab: Int = 0,
     val devices: List<Device> = emptyList(),
     val selectedDeviceId: String? = null,
+    val uploadLabel: String = "",
 ) : BaseState
 
 sealed class TrainingAction : BaseAction {
@@ -41,6 +42,7 @@ sealed class TrainingAction : BaseAction {
     data class DeleteFile(val fileId: String) : TrainingAction()
     data class SelectTab(val index: Int) : TrainingAction()
     data class SelectDevice(val deviceId: String?) : TrainingAction()
+    data class UpdateUploadLabel(val label: String) : TrainingAction()
 }
 
 sealed class TrainingEvent : BaseEvent {
@@ -152,6 +154,9 @@ class TrainingViewModel(
             }
             is TrainingAction.SelectDevice -> {
                 _state.value = _state.value.copy(selectedDeviceId = action.deviceId)
+            }
+            is TrainingAction.UpdateUploadLabel -> {
+                _state.value = _state.value.copy(uploadLabel = action.label)
             }
         }
     }

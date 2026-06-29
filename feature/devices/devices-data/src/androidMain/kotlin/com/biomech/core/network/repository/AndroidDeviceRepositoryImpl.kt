@@ -36,6 +36,12 @@ private fun Device.toCached() = CachedDevice(
     type = if (type == DeviceType.PROSTHETIC) "prosthetic" else "sensor",
     name = name,
     hwVersion = hwVersion,
+    bleServiceUuid = bleServiceUuid,
+    bleCommandCharUuid = bleCommandCharUuid,
+    bleStatusCharUuid = bleStatusCharUuid,
+    bleEmgCharUuid = bleEmgCharUuid,
+    lastRecordingAt = lastRecordingAt?.toLongOrNull(),
+    lastTrainingAt = lastTrainingAt?.toLongOrNull(),
     cachedAt = currentTimeMillis(),
 )
 
@@ -44,4 +50,10 @@ private fun CachedDevice.toDomain() = Device(
     type = if (type == "prosthetic") DeviceType.PROSTHETIC else DeviceType.SENSOR,
     name = name,
     hwVersion = hwVersion,
+    bleServiceUuid = bleServiceUuid,
+    bleCommandCharUuid = bleCommandCharUuid,
+    bleStatusCharUuid = bleStatusCharUuid,
+    bleEmgCharUuid = bleEmgCharUuid,
+    lastRecordingAt = lastRecordingAt?.toString(),
+    lastTrainingAt = lastTrainingAt?.toString(),
 )

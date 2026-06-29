@@ -9,7 +9,7 @@ import io.ktor.client.request.*
 class DeviceApi {
     private val client = createHttpClient()
 
-    suspend fun getDevices(): List<DeviceDto> {
+    suspend fun getDevices(): PaginatedResponseDto<DeviceDto> {
         return client.get("/api/v1/devices").checkError().body()
     }
 

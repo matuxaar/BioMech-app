@@ -14,8 +14,8 @@ open class DeviceRepositoryImpl(
 
     override suspend fun getDevices(): AppResult<List<Device>> {
         return try {
-            val dtos = deviceApi.getDevices()
-            val devices = dtos.map { it.toDomain() }
+            val response = deviceApi.getDevices()
+            val devices = response.data.map { it.toDomain() }
             afterDevicesFetched(devices)
             AppResult.Success(devices)
         } catch (e: Exception) {
@@ -109,6 +109,8 @@ internal fun DeviceDto.toDomain() = Device(
     bleCommandCharUuid = bleCommandCharUuid,
     bleStatusCharUuid = bleStatusCharUuid,
     bleEmgCharUuid = bleEmgCharUuid,
+    lastRecordingAt = lastRecordingAt,
+    lastTrainingAt = lastTrainingAt,
 )
 
 internal fun DeviceActionDto.toDomain() = DeviceAction(

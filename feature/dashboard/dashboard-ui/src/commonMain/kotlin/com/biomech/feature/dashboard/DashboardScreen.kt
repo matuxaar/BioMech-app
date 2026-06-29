@@ -20,6 +20,7 @@ fun DashboardScreen(
     emgData: List<List<Float>>,
     predictionLabel: String?,
     streamConnected: Boolean,
+    isRecording: Boolean = false,
     deviceActions: List<DeviceAction> = emptyList(),
     onStartRecording: () -> Unit,
     onStopRecording: () -> Unit,
@@ -120,13 +121,15 @@ fun DashboardScreen(
                 ) {
                     OutlinedButton(
                         onClick = onStartRecording,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        enabled = deviceConnected && !isRecording,
                     ) {
                         Text(AppResources.strings.startRecording)
                     }
                     Button(
                         onClick = onStopRecording,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        enabled = isRecording,
                     ) {
                         Text(AppResources.strings.stop)
                     }

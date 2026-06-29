@@ -67,7 +67,7 @@ class AuthApi {
     suspend fun refreshToken(refreshToken: String): FirebaseTokenRefreshResponse {
         return client.post("https://securetoken.googleapis.com/v1/token") {
             parameter("key", FIREBASE_API_KEY)
-            setBody(FirebaseTokenRefreshRequest(refreshToken, "refresh_token"))
+            setBody(FirebaseTokenRefreshRequest(grantType = "refresh_token", refreshToken = refreshToken))
         }.checkFirebaseError().body()
     }
 

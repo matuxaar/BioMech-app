@@ -183,6 +183,7 @@ fun App() {
                             emgData = state.emgData,
                             predictionLabel = state.predictionLabel,
                             streamConnected = state.streamConnected,
+                            isRecording = state.isRecording,
                             deviceActions = state.deviceActions,
                             onStartRecording = { viewModel.dispatch(DashboardAction.StartRecording) },
                             onStopRecording = { viewModel.dispatch(DashboardAction.StopRecording) },
@@ -197,7 +198,7 @@ fun App() {
                         val state by viewModel.state.collectAsState()
                         val pickFile = rememberFilePickerLauncher { bytes, fileName ->
                             viewModel.dispatch(TrainingAction.UploadFile(
-                                state.selectedDeviceId ?: "", "", bytes, fileName
+                                state.selectedDeviceId ?: "", state.uploadLabel, bytes, fileName
                             ))
                         }
 
@@ -213,6 +214,7 @@ fun App() {
                             selectedTab = state.selectedTab,
                             devices = state.devices,
                             selectedDeviceId = state.selectedDeviceId,
+                            uploadLabel = state.uploadLabel,
                             onBack = { navigator.goBack() },
                             onToggleSession = { viewModel.dispatch(TrainingAction.ToggleSession(it)) },
                             onStartTraining = { viewModel.dispatch(TrainingAction.StartTraining) },
@@ -220,6 +222,7 @@ fun App() {
                             onDeleteFile = { viewModel.dispatch(TrainingAction.DeleteFile(it)) },
                             onUploadClick = { pickFile() },
                             onSelectDevice = { viewModel.dispatch(TrainingAction.SelectDevice(it)) },
+                            onUploadLabelChange = { viewModel.dispatch(TrainingAction.UpdateUploadLabel(it)) },
                         )
                     }
                 }

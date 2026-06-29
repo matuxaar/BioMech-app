@@ -418,6 +418,7 @@ fun MainScreen(
                             streamingConnected = streamingConnected,
                             onToggleStreaming = { enabled ->
                                 streamingEnabled = enabled
+                                streamingConnected = enabled
                             },
                             onBack = { settingsSubScreen = null },
                         )

@@ -35,5 +35,5 @@ actual fun rememberFilePickerLauncher(onResult: (ByteArray, String) -> Unit): ()
             onResult(bytes, fileName)
         } catch (_: Exception) { }
     }
-    return { launcher.launch("*/*") }
+    return { launcher.launch("text/csv") }
 }

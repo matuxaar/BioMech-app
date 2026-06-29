@@ -17,7 +17,7 @@ class TrainingApi {
         }.checkError().body()
     }
 
-    suspend fun getJobs(): List<TrainingJobDto> {
+    suspend fun getJobs(): PaginatedResponseDto<TrainingJobDto> {
         return client.get("/api/v1/training/jobs").checkError().body()
     }
 
@@ -34,7 +34,7 @@ class TrainingApi {
         }.checkError().body()
     }
 
-    suspend fun getFiles(): List<TrainingFileDto> {
+    suspend fun getFiles(): PaginatedResponseDto<TrainingFileDto> {
         return client.get("/api/v1/training/files").checkError().body()
     }
 

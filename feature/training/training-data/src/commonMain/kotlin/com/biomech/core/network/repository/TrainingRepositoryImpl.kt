@@ -25,8 +25,8 @@ open class TrainingRepositoryImpl(
 
     override suspend fun getJobs(): AppResult<List<TrainingJob>> {
         return try {
-            val dtos = trainingApi.getJobs()
-            val jobs = dtos.map { it.toDomain() }
+            val response = trainingApi.getJobs()
+            val jobs = response.data.map { it.toDomain() }
             afterJobsFetched(jobs)
             AppResult.Success(jobs)
         } catch (e: Exception) {
@@ -45,8 +45,8 @@ open class TrainingRepositoryImpl(
 
     override suspend fun getFiles(): AppResult<List<TrainingFile>> {
         return try {
-            val dtos = trainingApi.getFiles()
-            AppResult.Success(dtos.map { it.toDomain() })
+            val response = trainingApi.getFiles()
+            AppResult.Success(response.data.map { it.toDomain() })
         } catch (e: Exception) {
             AppResult.Error(e.message ?: "Failed to fetch files")
         }

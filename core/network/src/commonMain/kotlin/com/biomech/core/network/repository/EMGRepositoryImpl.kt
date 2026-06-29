@@ -46,8 +46,8 @@ open class EMGRepositoryImpl(
 
     override suspend fun getSessions(): AppResult<List<EMGSession>> {
         return try {
-            val dtos = emgApi.getSessions()
-            val sessions = dtos.map { it.toDomain() }
+            val response = emgApi.getSessions()
+            val sessions = response.data.map { it.toDomain() }
             onSessionsFetched(sessions)
             AppResult.Success(sessions)
         } catch (e: Exception) {
@@ -64,8 +64,8 @@ internal fun com.biomech.core.network.dto.SessionDto.toDomain() = EMGSession(
     id = id,
     deviceId = device_id,
     label = label,
-    startedAt = 0L,
-    endedAt = null,
+    startedAt = started_at.toLongOrNull() ?: 0L,
+    endedAt = ended_at?.toLongOrNull(),
 )
 
 internal fun EMGSample.toDto() = SampleRequest(

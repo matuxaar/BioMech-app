@@ -29,12 +29,16 @@ actual fun rememberCsvDownloader(): (name: String, bytes: ByteArray) -> Unit {
                     contentValues.put(MediaStore.Downloads.IS_PENDING, 0)
                     context.contentResolver.update(it, contentValues, null, null)
                 }
+                Toast.makeText(context, "Saved to Downloads: $name", Toast.LENGTH_SHORT).show()
             } else {
                 val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                if (!downloadsDir.exists()) downloadsDir.mkdirs()
                 val file = File(downloadsDir, name)
                 file.writeBytes(bytes)
+                Toast.makeText(context, "Saved to Downloads: $name", Toast.LENGTH_SHORT).show()
             }
-            Toast.makeText(context, "Saved to Downloads: $name", Toast.LENGTH_SHORT).show()
+        } catch (e: SecurityException) {
+            Toast.makeText(context, "Storage permission required to save files", Toast.LENGTH_LONG).show()
         } catch (_: Exception) { }
     }
 }

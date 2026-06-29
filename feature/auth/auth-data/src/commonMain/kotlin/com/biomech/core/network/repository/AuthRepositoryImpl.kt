@@ -121,7 +121,10 @@ class AuthRepositoryImpl(
 
     private suspend fun syncUser() {
         try {
-            createHttpClient().post("/api/v1/auth/firebase")
+            val token = ApiConfig.token ?: return
+            createHttpClient().post("/api/v1/auth/firebase") {
+                setBody(mapOf("id_token" to token))
+            }
         } catch (_: Exception) { }
     }
 

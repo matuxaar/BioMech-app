@@ -19,7 +19,7 @@ class EMGApi {
         client.post("/api/v1/emg/sessions/$sessionId/end").checkError()
     }
 
-    suspend fun getSessions(): List<SessionDto> {
+    suspend fun getSessions(): PaginatedResponseDto<SessionDto> {
         return client.get("/api/v1/emg/sessions").checkError().body()
     }
 
@@ -29,7 +29,7 @@ class EMGApi {
         }.checkError()
     }
 
-    suspend fun getSamples(sessionId: String): List<SampleDto> {
+    suspend fun getSamples(sessionId: String): PaginatedResponseDto<SampleDto> {
         return client.get("/api/v1/emg/sessions/$sessionId/samples").checkError().body()
     }
 }

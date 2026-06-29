@@ -35,6 +35,8 @@ data class DeviceDto(
     @SerialName("ble_command_char_uuid") val bleCommandCharUuid: String = "",
     @SerialName("ble_status_char_uuid") val bleStatusCharUuid: String = "",
     @SerialName("ble_emg_char_uuid") val bleEmgCharUuid: String = "",
+    @SerialName("last_recording_at") val lastRecordingAt: String? = null,
+    @SerialName("last_training_at") val lastTrainingAt: String? = null,
 )
 
 @Serializable

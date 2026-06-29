@@ -30,6 +30,7 @@ fun TrainingScreen(
     selectedTab: Int = 0,
     devices: List<Device> = emptyList(),
     selectedDeviceId: String? = null,
+    uploadLabel: String = "",
     onBack: () -> Unit = {},
     onToggleSession: (String) -> Unit,
     onStartTraining: () -> Unit,
@@ -37,6 +38,7 @@ fun TrainingScreen(
     onDeleteFile: (String) -> Unit = {},
     onUploadClick: () -> Unit = {},
     onSelectDevice: (String?) -> Unit = {},
+    onUploadLabelChange: (String) -> Unit = {},
 ) {
     Scaffold(
         topBar = {
@@ -84,6 +86,8 @@ fun TrainingScreen(
                     uploadError = uploadError,
                     devices = devices,
                     selectedDeviceId = selectedDeviceId,
+                    uploadLabel = uploadLabel,
+                    onUploadLabelChange = onUploadLabelChange,
                     onDeleteFile = onDeleteFile,
                     onUploadClick = onUploadClick,
                     onSelectDevice = onSelectDevice,
@@ -211,6 +215,8 @@ private fun FilesTab(
     uploadError: String?,
     devices: List<Device> = emptyList(),
     selectedDeviceId: String? = null,
+    uploadLabel: String = "",
+    onUploadLabelChange: (String) -> Unit = {},
     onDeleteFile: (String) -> Unit,
     onUploadClick: () -> Unit,
     onSelectDevice: (String?) -> Unit = {},
@@ -266,6 +272,15 @@ private fun FilesTab(
             }
             Spacer(Modifier.height(12.dp))
         }
+
+        OutlinedTextField(
+            value = uploadLabel,
+            onValueChange = onUploadLabelChange,
+            label = { Text(AppResources.strings.fileLabel) },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+        )
+        Spacer(Modifier.height(12.dp))
 
         Button(
             onClick = onUploadClick,

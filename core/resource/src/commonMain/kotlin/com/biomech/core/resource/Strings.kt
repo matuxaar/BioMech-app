@@ -327,6 +327,16 @@ class Strings(private val locale: Locale) {
         Locale.RU -> "Закрыть"
     }
 
+    val lastRecording: String get() = when (locale) {
+        Locale.EN -> "Last Recording"
+        Locale.RU -> "Последняя запись"
+    }
+
+    val lastTraining: String get() = when (locale) {
+        Locale.EN -> "Last Training"
+        Locale.RU -> "Последнее обучение"
+    }
+
     val addDevice: String get() = when (locale) {
         Locale.EN -> "Add Device"
         Locale.RU -> "Добавить устройство"
@@ -587,6 +597,11 @@ class Strings(private val locale: Locale) {
     val noFiles: String get() = when (locale) {
         Locale.EN -> "No training files yet"
         Locale.RU -> "Пока нет файлов"
+    }
+
+    val fileLabel: String get() = when (locale) {
+        Locale.EN -> "Label"
+        Locale.RU -> "Метка"
     }
 
     val saveRecording: String get() = when (locale) {
