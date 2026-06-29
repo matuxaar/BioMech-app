@@ -24,6 +24,7 @@ fun LoginScreen(
     onSkip: (() -> Unit)? = null,
 ) {
     var email by remember { mutableStateOf("") }
+    var confirmEmail by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     var isRegisterMode by remember { mutableStateOf(false) }
@@ -32,6 +33,7 @@ fun LoginScreen(
     val passwordValidator = remember { Validator<String>().apply { addRule(PasswordRule()) } }
 
     var emailError by remember { mutableStateOf<String?>(null) }
+    var confirmEmailError by remember { mutableStateOf<String?>(null) }
     var passwordError by remember { mutableStateOf<String?>(null) }
     var confirmError by remember { mutableStateOf<String?>(null) }
 
@@ -44,6 +46,16 @@ fun LoginScreen(
             valid = false
         } else {
             emailError = null
+        }
+
+        if (isRegisterMode) {
+            val emailMatchResult = MatchRule({ confirmEmail }, AppResources.strings.emailsDoNotMatch).validate(email)
+            if (emailMatchResult is com.biomech.core.validation.ValidationResult.Invalid) {
+                confirmEmailError = emailMatchResult.errors.first()
+                valid = false
+            } else {
+                confirmEmailError = null
+            }
         }
 
         val passwordResult = passwordValidator.validate(password)
@@ -66,6 +78,8 @@ fun LoginScreen(
 
         return valid
     }
+
+    val displayError = error?.let { mapFirebaseError(it) }
 
     Column(
         modifier = Modifier
@@ -93,6 +107,22 @@ fun LoginScreen(
             supportingText = emailError?.let { { Text(it) } },
             modifier = Modifier.fillMaxWidth()
         )
+
+        if (isRegisterMode) {
+            Spacer(Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = confirmEmail,
+                onValueChange = { confirmEmail = it; confirmEmailError = null },
+                label = { Text(AppResources.strings.confirmEmail) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                singleLine = true,
+                enabled = !isLoading,
+                isError = confirmEmailError != null,
+                supportingText = confirmEmailError?.let { { Text(it) } },
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
 
         Spacer(Modifier.height(16.dp))
 
@@ -126,10 +156,10 @@ fun LoginScreen(
             )
         }
 
-        if (error != null) {
+        if (displayError != null) {
             Spacer(Modifier.height(16.dp))
             Text(
-                text = error,
+                text = displayError,
                 color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodySmall,
             )
@@ -161,6 +191,8 @@ fun LoginScreen(
         TextButton(
             onClick = {
                 isRegisterMode = !isRegisterMode
+                confirmEmail = ""
+                confirmEmailError = null
                 confirmPassword = ""
                 confirmError = null
             },
@@ -181,4 +213,16 @@ fun LoginScreen(
             }
         }
     }
+}
+
+private fun mapFirebaseError(message: String): String = when {
+    message.contains("EMAIL_NOT_FOUND", ignoreCase = true) -> AppResources.strings.emailNotFound
+    message.contains("INVALID_PASSWORD", ignoreCase = true) -> AppResources.strings.invalidPassword
+    message.contains("EMAIL_EXISTS", ignoreCase = true) -> AppResources.strings.emailExists
+    message.contains("WEAK_PASSWORD", ignoreCase = true) -> AppResources.strings.weakPassword
+    message.contains("INVALID_EMAIL", ignoreCase = true) -> AppResources.strings.invalidEmail
+    message.contains("TOO_MANY_ATTEMPTS_TRY_LATER", ignoreCase = true) -> AppResources.strings.tooManyAttempts
+    message.contains("USER_DISABLED", ignoreCase = true) -> AppResources.strings.userDisabled
+    message.contains("OPERATION_NOT_ALLOWED", ignoreCase = true) -> AppResources.strings.operationNotAllowed
+    else -> message
 }

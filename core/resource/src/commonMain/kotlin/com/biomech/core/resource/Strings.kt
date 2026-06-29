@@ -27,6 +27,16 @@ class Strings(private val locale: Locale) {
         Locale.RU -> "Пароль"
     }
 
+    val confirmEmail: String get() = when (locale) {
+        Locale.EN -> "Confirm Email"
+        Locale.RU -> "Подтвердите эл. почту"
+    }
+
+    val emailsDoNotMatch: String get() = when (locale) {
+        Locale.EN -> "Emails do not match"
+        Locale.RU -> "Эл. почты не совпадают"
+    }
+
     val confirmPassword: String get() = when (locale) {
         Locale.EN -> "Confirm Password"
         Locale.RU -> "Подтвердите пароль"
@@ -50,6 +60,46 @@ class Strings(private val locale: Locale) {
     val dontHaveAccount: String get() = when (locale) {
         Locale.EN -> "Don't have an account? Register"
         Locale.RU -> "Нет аккаунта? Зарегистрироваться"
+    }
+
+    val emailNotFound: String get() = when (locale) {
+        Locale.EN -> "No account found with this email"
+        Locale.RU -> "Аккаунт с такой почтой не найден"
+    }
+
+    val invalidPassword: String get() = when (locale) {
+        Locale.EN -> "Incorrect password. Try again or reset your password."
+        Locale.RU -> "Неверный пароль. Попробуйте снова или сбросьте пароль."
+    }
+
+    val emailExists: String get() = when (locale) {
+        Locale.EN -> "An account with this email already exists"
+        Locale.RU -> "Аккаунт с такой почтой уже существует"
+    }
+
+    val weakPassword: String get() = when (locale) {
+        Locale.EN -> "Password is too weak. Use at least 8 characters, uppercase, lowercase, and a digit."
+        Locale.RU -> "Пароль слишком слабый. Используйте минимум 8 символов, заглавные, строчные буквы и цифры."
+    }
+
+    val invalidEmail: String get() = when (locale) {
+        Locale.EN -> "Invalid email format"
+        Locale.RU -> "Неверный формат почты"
+    }
+
+    val tooManyAttempts: String get() = when (locale) {
+        Locale.EN -> "Too many attempts. Please try again later."
+        Locale.RU -> "Слишком много попыток. Попробуйте позже."
+    }
+
+    val userDisabled: String get() = when (locale) {
+        Locale.EN -> "This account has been disabled"
+        Locale.RU -> "Этот аккаунт отключён"
+    }
+
+    val operationNotAllowed: String get() = when (locale) {
+        Locale.EN -> "Sign-in with email/password is not enabled"
+        Locale.RU -> "Вход по почте/паролю не включён"
     }
 
     val skipExplore: String get() = when (locale) {

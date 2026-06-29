@@ -106,7 +106,10 @@ fun ProfileScreen(
                         Text(AppResources.strings.cancel)
                     }
                     Button(
-                        onClick = { onUpdateNickname?.invoke(editingNickname) },
+                        onClick = {
+                            onUpdateNickname?.invoke(editingNickname)
+                            showEditor = false
+                        },
                         enabled = editingNickname.isNotBlank() && !isUpdating,
                     ) {
                         if (isUpdating) {

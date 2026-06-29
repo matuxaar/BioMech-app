@@ -63,7 +63,12 @@ open class DeviceRepositoryImpl(
             ))
             AppResult.Success(dto.toDomain())
         } catch (e: Exception) {
-            AppResult.Error(e.message ?: "Failed to update device")
+            val msg = e.message ?: ""
+            if (msg.contains("404")) {
+                AppResult.Error("Device not found on server. It may have been deleted.")
+            } else {
+                AppResult.Error(msg)
+            }
         }
     }
 
@@ -72,7 +77,12 @@ open class DeviceRepositoryImpl(
             deviceApi.deleteDevice(id)
             AppResult.Success(Unit)
         } catch (e: Exception) {
-            AppResult.Error(e.message ?: "Failed to delete device")
+            val msg = e.message ?: ""
+            if (msg.contains("404")) {
+                AppResult.Success(Unit)
+            } else {
+                AppResult.Error(msg)
+            }
         }
     }
 

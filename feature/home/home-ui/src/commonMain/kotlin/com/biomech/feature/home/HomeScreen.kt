@@ -67,51 +67,55 @@ fun HomeScreen(
         },
     ) { padding ->
         if (useGridLayout) {
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                item(key = "add_device") {
-                    GridAddCard(onAddDevice = onAddDevice)
-                }
-                items(devices, key = { it.id }) { device ->
-                    GridDeviceCard(
-                        device = device,
-                        onDeviceClick = onDeviceClick,
-                        onEditDevice = onEditDevice,
-                        onDeleteDevice = onDeleteDevice,
-                        onNavigateToTraining = onNavigateToTraining,
-                        onNavigateToDashboard = onNavigateToDashboard,
-                        onRecord = onRecord,
-                    )
+            key(devices.isEmpty()) {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding)
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    item(key = "add_device") {
+                        GridAddCard(onAddDevice = onAddDevice)
+                    }
+                    items(devices, key = { it.id }) { device ->
+                        GridDeviceCard(
+                            device = device,
+                            onDeviceClick = onDeviceClick,
+                            onEditDevice = onEditDevice,
+                            onDeleteDevice = onDeleteDevice,
+                            onNavigateToTraining = onNavigateToTraining,
+                            onNavigateToDashboard = onNavigateToDashboard,
+                            onRecord = onRecord,
+                        )
+                    }
                 }
             }
         } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                item(key = "add_device") {
-                    ListAddCard(onAddDevice = onAddDevice)
-                }
-                items(devices, key = { it.id }) { device ->
-                    ListDeviceCard(
-                        device = device,
-                        onDeviceClick = onDeviceClick,
-                        onEditDevice = onEditDevice,
-                        onDeleteDevice = onDeleteDevice,
-                        onNavigateToTraining = onNavigateToTraining,
-                        onNavigateToDashboard = onNavigateToDashboard,
-                        onRecord = onRecord,
-                    )
+            key(devices.isEmpty()) {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding)
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    item(key = "add_device") {
+                        ListAddCard(onAddDevice = onAddDevice)
+                    }
+                    items(devices, key = { it.id }) { device ->
+                        ListDeviceCard(
+                            device = device,
+                            onDeviceClick = onDeviceClick,
+                            onEditDevice = onEditDevice,
+                            onDeleteDevice = onDeleteDevice,
+                            onNavigateToTraining = onNavigateToTraining,
+                            onNavigateToDashboard = onNavigateToDashboard,
+                            onRecord = onRecord,
+                        )
+                    }
                 }
             }
         }

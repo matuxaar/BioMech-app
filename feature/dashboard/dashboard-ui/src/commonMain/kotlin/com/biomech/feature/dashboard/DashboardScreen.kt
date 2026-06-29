@@ -2,6 +2,8 @@ package com.biomech.feature.dashboard
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -31,7 +33,7 @@ fun DashboardScreen(
                 title = { Text(AppResources.strings.dashboardTitle) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Text("\u2190")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
                     }
                 },
                 actions = {

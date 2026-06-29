@@ -94,7 +94,8 @@ class AuthRepositoryImpl(
     override suspend fun uploadAvatar(bytes: ByteArray, fileName: String): AppResult<String> {
         return try {
             val photoUrl = authApi.uploadAvatar(bytes, fileName)
-            AppResult.Success(photoUrl)
+            val resolvedUrl = resolveUrl(photoUrl)
+            AppResult.Success(resolvedUrl)
         } catch (e: Exception) {
             AppResult.Error(e.message ?: "Failed to upload avatar")
         }
@@ -133,16 +134,18 @@ class AuthRepositoryImpl(
     }
 }
 
+internal fun resolveUrl(relativeUrl: String): String {
+    if (relativeUrl.startsWith("http")) return relativeUrl
+    val base = ApiConfig.baseUrl.trimEnd('/')
+    val host = base.substringBefore("/api").trimEnd('/')
+    return host + relativeUrl
+}
+
 private fun ProfileDto.toDomain() = UserProfile(
     email = email,
     nickname = nickname,
     displayName = display_name,
-    photoUrl = if (photo_url.startsWith("http")) photo_url
-        else {
-            val base = ApiConfig.baseUrl.trimEnd('/')
-            val host = base.substringBefore("/api").trimEnd('/')
-            host + photo_url
-        },
+    photoUrl = resolveUrl(photo_url),
     deviceCount = device_count,
 )
 
