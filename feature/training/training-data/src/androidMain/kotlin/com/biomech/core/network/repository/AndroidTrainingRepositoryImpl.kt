@@ -8,10 +8,13 @@ import com.biomech.core.network.api.TrainingApi
 import com.biomech.domain.model.TrainingJob
 import com.biomech.domain.model.TrainingStatus
 
+import com.biomech.core.network.OfflineQueueManager
+
 class AndroidTrainingRepositoryImpl(
     trainingApi: TrainingApi,
     private val trainingJobDao: TrainingJobDao,
-) : TrainingRepositoryImpl(trainingApi) {
+    offlineQueueManager: OfflineQueueManager? = null,
+) : TrainingRepositoryImpl(trainingApi, offlineQueueManager) {
 
     override suspend fun afterJobCreated(job: TrainingJob) {
         trainingJobDao.insert(job.toCached())
@@ -41,6 +44,8 @@ private fun TrainingJob.toCached() = CachedTrainingJob(
         TrainingStatus.FAILED -> "failed"
     },
     accuracy = accuracy,
+    createdAt = createdAt,
+    errorMessage = errorMessage,
     cachedAt = currentTimeMillis(),
 )
 
@@ -55,4 +60,6 @@ private fun CachedTrainingJob.toDomain() = TrainingJob(
         else -> TrainingStatus.PENDING
     },
     accuracy = accuracy,
+    createdAt = createdAt,
+    errorMessage = errorMessage,
 )

@@ -75,5 +75,7 @@ kotlin {
         androidMain.dependencies {
             implementation("androidx.activity:activity-compose:1.9.3")
         }
+        iosMain.dependencies {
+        }
     }
 }

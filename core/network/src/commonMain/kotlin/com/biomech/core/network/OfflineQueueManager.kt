@@ -1,9 +1,8 @@
 package com.biomech.core.network
 
 import com.biomech.core.common.currentTimeMillis
+import com.biomech.core.connectivity.ConnectionStatus
 import com.biomech.core.connectivity.ConnectivityObserver
-import com.biomech.core.database.dao.OfflineQueueDao
-import com.biomech.core.database.entity.OfflineQueueEntry
 import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -11,8 +10,22 @@ import io.ktor.http.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 
+class OfflineQueueEntry(
+    val id: Long = 0,
+    val method: String,
+    val path: String,
+    val bodyJson: String? = null,
+    val createdAt: Long = currentTimeMillis(),
+)
+
+interface QueueStorage {
+    suspend fun insert(entry: OfflineQueueEntry)
+    suspend fun getAll(): List<OfflineQueueEntry>
+    suspend fun delete(entry: OfflineQueueEntry)
+}
+
 class OfflineQueueManager(
-    private val queueDao: OfflineQueueDao,
+    private val storage: QueueStorage,
     private val connectivityObserver: ConnectivityObserver,
     private val httpClient: HttpClient,
 ) {
@@ -23,7 +36,7 @@ class OfflineQueueManager(
         flushJob = scope.launch {
             connectivityObserver.status
                 .collect { status ->
-                    if (status == ConnectivityObserver.ConnectionStatus.AVAILABLE) {
+                    if (status == ConnectionStatus.AVAILABLE) {
                         flush()
                     }
                 }
@@ -36,7 +49,7 @@ class OfflineQueueManager(
     }
 
     suspend fun enqueue(method: String, path: String, bodyJson: String? = null) {
-        queueDao.insert(
+        storage.insert(
             OfflineQueueEntry(
                 method = method,
                 path = path,
@@ -47,7 +60,7 @@ class OfflineQueueManager(
     }
 
     suspend fun enqueueIfOffline(method: String, path: String, bodyJson: String? = null): Boolean {
-        if (connectivityObserver.status.value != ConnectivityObserver.ConnectionStatus.AVAILABLE) {
+        if (connectivityObserver.status.value != ConnectionStatus.AVAILABLE) {
             enqueue(method, path, bodyJson)
             return true
         }
@@ -55,11 +68,11 @@ class OfflineQueueManager(
     }
 
     suspend fun flush() {
-        val entries = queueDao.getAll()
+        val entries = storage.getAll()
         for (entry in entries) {
             try {
                 replay(entry)
-                queueDao.deleteById(entry.id)
+                storage.delete(entry)
             } catch (_: Exception) {
                 // will retry on next connectivity change
             }

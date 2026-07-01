@@ -15,6 +15,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(project(":core:common"))
+            implementation(project(":core:connectivity"))
             implementation(project(":domain"))
             api(libs.ktor.client.core)
             api(libs.ktor.client.content.negotiation)

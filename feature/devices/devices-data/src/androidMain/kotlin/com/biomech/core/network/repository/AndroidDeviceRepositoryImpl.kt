@@ -4,6 +4,7 @@ import com.biomech.core.common.AppResult
 import com.biomech.core.common.currentTimeMillis
 import com.biomech.core.database.dao.DeviceDao
 import com.biomech.core.database.entity.CachedDevice
+import com.biomech.core.network.OfflineQueueManager
 import com.biomech.core.network.api.DeviceApi
 import com.biomech.domain.model.Device
 import com.biomech.domain.model.DeviceType
@@ -11,7 +12,8 @@ import com.biomech.domain.model.DeviceType
 class AndroidDeviceRepositoryImpl(
     deviceApi: DeviceApi,
     private val deviceDao: DeviceDao,
-) : DeviceRepositoryImpl(deviceApi) {
+    offlineQueueManager: OfflineQueueManager? = null,
+) : DeviceRepositoryImpl(deviceApi, offlineQueueManager) {
 
     override suspend fun afterDevicesFetched(devices: List<Device>) {
         deviceDao.clearAll()

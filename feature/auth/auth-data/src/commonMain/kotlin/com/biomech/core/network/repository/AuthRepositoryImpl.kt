@@ -30,6 +30,7 @@ class AuthRepositoryImpl(
         return try {
             val response = authApi.signInWithPassword(email, password)
             saveTokens(response.idToken, response.refreshToken, response.localId, response.email)
+            wireTokenRefresh()
             syncUser()
             AppResult.Success(User(id = response.localId, email = response.email))
         } catch (e: Exception) {
@@ -41,6 +42,7 @@ class AuthRepositoryImpl(
         return try {
             val response = authApi.signUp(email, password)
             saveTokens(response.idToken, response.refreshToken, response.localId, response.email)
+            wireTokenRefresh()
             syncUser()
             AppResult.Success(User(id = response.localId, email = response.email))
         } catch (e: Exception) {
@@ -60,12 +62,23 @@ class AuthRepositoryImpl(
         }
     }
 
+    override suspend fun restoreSession(): AppResult<User> {
+        val token = storage.getString(KEY_ACCESS_TOKEN)
+        val userId = storage.getString(KEY_USER_ID)
+        val email = storage.getString(KEY_USER_EMAIL)
+        if (token.isEmpty() || userId.isEmpty()) return AppResult.Error("No saved session")
+        ApiConfig.token = token
+        wireTokenRefresh()
+        return AppResult.Success(User(id = userId, email = email))
+    }
+
     override suspend fun logout() {
         storage.remove(KEY_ACCESS_TOKEN)
         storage.remove(KEY_REFRESH_TOKEN)
         storage.remove(KEY_USER_ID)
         storage.remove(KEY_USER_EMAIL)
         ApiConfig.token = null
+        ApiConfig.onTokenExpired = null
     }
 
     override suspend fun getToken(): String? {
@@ -126,6 +139,15 @@ class AuthRepositoryImpl(
                 setBody(mapOf("id_token" to token))
             }
         } catch (_: Exception) { }
+    }
+
+    private fun wireTokenRefresh() {
+        ApiConfig.onTokenExpired = {
+            val result = refreshToken()
+            if (result is AppResult.Error) {
+                logout()
+            }
+        }
     }
 
     private fun saveTokens(access: String, refresh: String, userId: String, email: String) {

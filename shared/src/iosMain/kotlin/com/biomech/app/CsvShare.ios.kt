@@ -1,35 +1,36 @@
 package com.biomech.app
 
 import androidx.compose.runtime.Composable
-import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.usePinned
 import platform.Foundation.NSData
 import platform.Foundation.NSDocumentDirectory
 import platform.Foundation.NSFileManager
 import platform.Foundation.NSUserDomainMask
 import platform.UIKit.UIApplication
 import platform.UIKit.UIActivityViewController
+import platform.UIKit.UIWindowScene
 
-@OptIn(ExperimentalForeignApi::class)
 @Composable
 actual fun rememberCsvShareLauncher(): (name: String, bytes: ByteArray) -> Unit {
     return { name, bytes ->
-        try {
-            val documentsDir = NSFileManager.defaultManager.URLForDirectory(
-                directory = NSDocumentDirectory,
-                appropriateForURL = null,
-                create = false,
-                error = null,
-            ) ?: return@try
-            val fileURL = documentsDir.URLByAppendingPathComponent(name) ?: return@try
-            val nsData = NSData.create(bytes = bytes, length = bytes.size.toULong())
-            nsData.writeToURL(fileURL, atomically = true)
+        val paths = NSFileManager.defaultManager.URLsForDirectory(NSDocumentDirectory, NSUserDomainMask)
+        val docsDir = paths.first()
+        val fileUrl = docsDir.URLByAppendingPathComponent("share_$name")
+        val nsData = bytes.usePinned { pinned ->
+            NSData.create(bytes = pinned.addressOf(0), length = bytes.size.toULong())
+        }
+        nsData.writeToURL(fileUrl, atomically = true)
 
-            val controller = UIActivityViewController(
-                activityItems = listOf(fileURL),
-                applicationActivities = null,
-            )
-            val root = UIApplication.sharedApplication.keyWindow?.rootViewController
-            root?.presentViewController(controller, animated = true, completion = null)
-        } catch (_: Exception) { }
+        val controller = UIActivityViewController(
+            activityItems = listOf(fileUrl),
+            applicationActivities = null,
+        )
+        val root = UIApplication.sharedApplication.connectedScenes
+            .firstOrNull { it is UIWindowScene }
+            ?.let { it as UIWindowScene }
+            ?.windows?.firstOrNull()
+            ?.rootViewController
+            ?: UIApplication.sharedApplication.keyWindow?.rootViewController
+        root?.presentViewController(controller, animated = true, completion = null)
     }
 }

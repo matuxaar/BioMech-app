@@ -1,6 +1,8 @@
 package com.biomech.app
 
 import androidx.compose.runtime.Composable
+import kotlinx.cinterop.usePinned
+import platform.Foundation.NSData
 import platform.Foundation.NSDocumentDirectory
 import platform.Foundation.NSFileManager
 import platform.Foundation.NSUserDomainMask
@@ -8,18 +10,12 @@ import platform.Foundation.NSUserDomainMask
 @Composable
 actual fun rememberCsvDownloader(): (name: String, bytes: ByteArray) -> Unit {
     return { name, bytes ->
-        try {
-            val documentsDir = NSFileManager.defaultManager.URLForDirectory(
-                directory = NSDocumentDirectory,
-                appropriateForURL = null,
-                create = false,
-                error = null,
-            )
-            val fileURL = documentsDir?.URLByAppendingPathComponent(name)
-            fileURL?.let { url ->
-                val data = platform.Foundation.NSData.create(bytes = bytes, length = bytes.size.toULong())
-                data.writeToURL(url, atomically = true)
-            }
-        } catch (_: Exception) { }
+        val paths = NSFileManager.defaultManager.URLsForDirectory(NSDocumentDirectory, NSUserDomainMask)
+        val docsDir = paths.first()
+        val fileUrl = docsDir.URLByAppendingPathComponent(name)
+        val nsData = bytes.usePinned { pinned ->
+            NSData.create(bytes = pinned.addressOf(0), length = bytes.size.toULong())
+        }
+        nsData.writeToURL(fileUrl, atomically = true)
     }
 }

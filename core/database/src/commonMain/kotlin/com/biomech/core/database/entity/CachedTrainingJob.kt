@@ -10,6 +10,8 @@ data class CachedTrainingJob(
     val sessionIds: String,
     val status: String,
     val accuracy: Double,
+    @ColumnInfo(name = "created_at") val createdAt: String = "",
     @ColumnInfo(name = "updated_at") val updatedAt: Long? = null,
+    val errorMessage: String = "",
     val cachedAt: Long,
 )

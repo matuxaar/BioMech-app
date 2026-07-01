@@ -11,6 +11,13 @@ kotlin {
         minSdk = 26
     }
 
+    listOf(iosArm64(), iosSimulatorArm64()).forEach { target ->
+        target.binaries.framework {
+            baseName = "Database"
+            isStatic = true
+        }
+    }
+
     sourceSets {
         commonMain.dependencies {
             implementation(project(":core:common"))
@@ -21,6 +28,8 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.room.runtime)
             implementation(libs.room.ktx)
+        }
+        iosMain.dependencies {
         }
     }
 }

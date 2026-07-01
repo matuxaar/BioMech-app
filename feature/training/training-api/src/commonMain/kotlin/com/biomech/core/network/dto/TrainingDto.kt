@@ -15,6 +15,8 @@ data class TrainingJobDto(
     val status: String,
     val accuracy: Double,
     val created_at: String,
+    val updated_at: String = "",
+    val error_message: String = "",
 )
 
 @Serializable

@@ -1,15 +1,19 @@
 package com.biomech.core.network.repository
 
 import com.biomech.core.common.AppResult
+import com.biomech.core.network.OfflineQueueManager
 import com.biomech.core.network.api.DeviceApi
 import com.biomech.core.network.dto.*
+import com.biomech.core.network.networkJson
 import com.biomech.domain.model.Device
 import com.biomech.domain.model.DeviceAction
 import com.biomech.domain.model.DeviceType
 import com.biomech.domain.repository.DeviceRepository
+import kotlinx.serialization.encodeToString
 
 open class DeviceRepositoryImpl(
     protected val deviceApi: DeviceApi,
+    protected val offlineQueueManager: OfflineQueueManager? = null,
 ) : DeviceRepository {
 
     override suspend fun getDevices(): AppResult<List<Device>> {
@@ -42,6 +46,12 @@ open class DeviceRepositoryImpl(
             afterDeviceCreated(device)
             AppResult.Success(device)
         } catch (e: Exception) {
+            val body = networkJson.encodeToString(CreateDeviceRequest(
+                type = type, name = name, hwVersion = hwVersion,
+                bleServiceUuid = bleServiceUuid, bleCommandCharUuid = bleCommandCharUuid,
+                bleStatusCharUuid = bleStatusCharUuid, bleEmgCharUuid = bleEmgCharUuid,
+            ))
+            offlineQueueManager?.enqueueIfOffline("POST", "/api/v1/devices", body)
             AppResult.Error(e.message ?: "Failed to create device")
         }
     }
@@ -67,6 +77,12 @@ open class DeviceRepositoryImpl(
             if (msg.contains("404")) {
                 AppResult.Error("Device not found on server. It may have been deleted.")
             } else {
+                val body = networkJson.encodeToString(UpdateDeviceRequest(
+                    name = name, hwVersion = hwVersion, type = type,
+                    bleServiceUuid = bleServiceUuid, bleCommandCharUuid = bleCommandCharUuid,
+                    bleStatusCharUuid = bleStatusCharUuid, bleEmgCharUuid = bleEmgCharUuid,
+                ))
+                offlineQueueManager?.enqueueIfOffline("PUT", "/api/v1/devices/$id", body)
                 AppResult.Error(msg)
             }
         }
@@ -81,6 +97,7 @@ open class DeviceRepositoryImpl(
             if (msg.contains("404")) {
                 AppResult.Success(Unit)
             } else {
+                offlineQueueManager?.enqueueIfOffline("DELETE", "/api/v1/devices/$id")
                 AppResult.Error(msg)
             }
         }

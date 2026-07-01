@@ -2,16 +2,20 @@ package com.biomech.core.network.repository
 
 import com.biomech.core.common.AppResult
 import com.biomech.core.common.currentTimeMillis
+import com.biomech.core.network.OfflineQueueManager
 import com.biomech.core.network.api.EMGApi
 import com.biomech.core.network.dto.BatchSamplesRequest
 import com.biomech.core.network.dto.CreateSessionRequest
 import com.biomech.core.network.dto.SampleRequest
+import com.biomech.core.network.networkJson
 import com.biomech.domain.model.EMGSample
 import com.biomech.domain.model.EMGSession
 import com.biomech.domain.repository.EMGRepository
+import kotlinx.serialization.encodeToString
 
 open class EMGRepositoryImpl(
     protected val emgApi: EMGApi,
+    protected val offlineQueueManager: OfflineQueueManager? = null,
 ) : EMGRepository {
 
     override suspend fun startSession(deviceId: String, label: String): AppResult<EMGSession> {
@@ -21,6 +25,8 @@ open class EMGRepositoryImpl(
             afterSessionCreated(session)
             AppResult.Success(session)
         } catch (e: Exception) {
+            val body = networkJson.encodeToString(CreateSessionRequest(deviceId, label))
+            offlineQueueManager?.enqueueIfOffline("POST", "/api/v1/emg/sessions", body)
             AppResult.Error(e.message ?: "Failed to start session")
         }
     }
@@ -30,6 +36,7 @@ open class EMGRepositoryImpl(
             emgApi.endSession(sessionId)
             AppResult.Success(Unit)
         } catch (e: Exception) {
+            offlineQueueManager?.enqueueIfOffline("POST", "/api/v1/emg/sessions/$sessionId/end")
             AppResult.Error(e.message ?: "Failed to end session")
         }
     }
@@ -40,6 +47,8 @@ open class EMGRepositoryImpl(
             emgApi.addSamplesBatch(sessionId, request)
             AppResult.Success(Unit)
         } catch (e: Exception) {
+            val body = networkJson.encodeToString(BatchSamplesRequest(samples.map { it.toDto() }))
+            offlineQueueManager?.enqueueIfOffline("POST", "/api/v1/emg/sessions/$sessionId/samples/batch", body)
             AppResult.Error(e.message ?: "Failed to add samples")
         }
     }

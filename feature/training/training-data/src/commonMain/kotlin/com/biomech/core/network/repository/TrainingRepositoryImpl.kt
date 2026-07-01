@@ -1,15 +1,19 @@
 package com.biomech.core.network.repository
 
 import com.biomech.core.common.AppResult
+import com.biomech.core.network.OfflineQueueManager
 import com.biomech.core.network.api.TrainingApi
 import com.biomech.core.network.dto.CreateTrainingJobRequest
+import com.biomech.core.network.networkJson
 import com.biomech.domain.model.TrainingFile
 import com.biomech.domain.model.TrainingJob
 import com.biomech.domain.model.TrainingStatus
 import com.biomech.domain.repository.TrainingRepository
+import kotlinx.serialization.encodeToString
 
 open class TrainingRepositoryImpl(
     protected val trainingApi: TrainingApi,
+    protected val offlineQueueManager: OfflineQueueManager? = null,
 ) : TrainingRepository {
 
     override suspend fun createJob(sessionIds: List<String>): AppResult<TrainingJob> {
@@ -19,6 +23,8 @@ open class TrainingRepositoryImpl(
             afterJobCreated(job)
             AppResult.Success(job)
         } catch (e: Exception) {
+            val body = networkJson.encodeToString(CreateTrainingJobRequest(sessionIds))
+            offlineQueueManager?.enqueueIfOffline("POST", "/api/v1/training/jobs", body)
             AppResult.Error(e.message ?: "Failed to create training job")
         }
     }
@@ -57,6 +63,7 @@ open class TrainingRepositoryImpl(
             trainingApi.deleteFile(id)
             AppResult.Success(Unit)
         } catch (e: Exception) {
+            offlineQueueManager?.enqueueIfOffline("DELETE", "/api/v1/training/files/$id")
             AppResult.Error(e.message ?: "Failed to delete file")
         }
     }
@@ -77,6 +84,9 @@ internal fun com.biomech.core.network.dto.TrainingJobDto.toDomain() = TrainingJo
         else -> TrainingStatus.PENDING
     },
     accuracy = accuracy,
+    createdAt = created_at,
+    updatedAt = updated_at,
+    errorMessage = error_message,
 )
 
 internal fun com.biomech.core.network.dto.TrainingFileDto.toDomain() = TrainingFile(

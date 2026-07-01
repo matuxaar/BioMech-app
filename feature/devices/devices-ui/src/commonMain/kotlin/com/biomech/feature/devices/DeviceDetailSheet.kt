@@ -52,13 +52,13 @@ fun DeviceDetailSheet(
                 DetailRow(AppResources.strings.hardwareVersion, device.hwVersion)
                 HorizontalDivider(modifier = Modifier.padding(vertical = 10.dp))
                 DetailRow(AppResources.strings.id, device.id.take(8) + "...")
-                if (device.lastRecordingAt != null) {
+                device.lastRecordingAt?.let { recordingAt ->
                     HorizontalDivider(modifier = Modifier.padding(vertical = 10.dp))
-                    DetailRow(AppResources.strings.lastRecording, formatTimestamp(device.lastRecordingAt))
+                    DetailRow(AppResources.strings.lastRecording, formatTimestamp(recordingAt))
                 }
-                if (device.lastTrainingAt != null) {
+                device.lastTrainingAt?.let { trainingAt ->
                     HorizontalDivider(modifier = Modifier.padding(vertical = 10.dp))
-                    DetailRow(AppResources.strings.lastTraining, formatTimestamp(device.lastTrainingAt))
+                    DetailRow(AppResources.strings.lastTraining, formatTimestamp(trainingAt))
                 }
             }
         }

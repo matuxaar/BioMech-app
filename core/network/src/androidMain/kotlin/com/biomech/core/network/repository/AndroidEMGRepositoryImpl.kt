@@ -7,10 +7,13 @@ import com.biomech.core.database.entity.CachedEMGSession
 import com.biomech.core.network.api.EMGApi
 import com.biomech.domain.model.EMGSession
 
+import com.biomech.core.network.OfflineQueueManager
+
 class AndroidEMGRepositoryImpl(
     emgApi: EMGApi,
     private val emgSessionDao: EMGSessionDao,
-) : EMGRepositoryImpl(emgApi) {
+    offlineQueueManager: OfflineQueueManager? = null,
+) : EMGRepositoryImpl(emgApi, offlineQueueManager) {
 
     override suspend fun afterSessionCreated(session: EMGSession) {
         emgSessionDao.insert(session.toCached())

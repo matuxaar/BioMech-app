@@ -2,9 +2,11 @@ package com.biomech.core.di
 
 import com.biomech.core.ble.BleManager
 import com.biomech.core.ble.IosBleManager
-import com.biomech.core.ble.SimulatedBleManager
+import com.biomech.core.ble.SmartBleManager
+import com.biomech.core.buildconfig.BuildConfig
 import com.biomech.core.common.PlatformContext
-import com.biomech.core.network.api.EMGApi
+import com.biomech.core.connectivity.ConnectivityObserver
+import com.biomech.core.connectivity.IosConnectivityObserver
 import com.biomech.core.network.repository.AuthRepositoryImpl
 import com.biomech.core.network.repository.DeviceRepositoryImpl
 import com.biomech.core.network.repository.EMGRepositoryImpl
@@ -30,10 +32,11 @@ actual val platformModule: Module = module {
     single<BleManager> {
         SmartBleManager(realManager = IosBleManager())
     }
+    single<ConnectivityObserver> { IosConnectivityObserver() }
 }
 
 actual fun initKoin(context: PlatformContext) {
-    com.biomech.core.network.ApiConfig.baseUrl = "http://localhost:8080/api/v1"
+    com.biomech.core.network.ApiConfig.baseUrl = BuildConfig.baseUrl
     org.koin.core.context.startKoin {
         modules(
             module { single { context } },
@@ -46,4 +49,17 @@ actual fun initKoin(context: PlatformContext) {
             viewModelsModule,
         )
     }
+}
+
+fun onAppStart() {
+    val koin = org.koin.core.context.GlobalContext.get()
+    koin.get<ConnectivityObserver>().start()
+    kotlinx.coroutines.GlobalScope.launch {
+        koin.get<AuthRepository>().restoreSession()
+    }
+}
+
+fun onAppStop() {
+    val koin = org.koin.core.context.GlobalContext.getOrNull() ?: return
+    koin.get<ConnectivityObserver>().stop()
 }

@@ -1,20 +1,28 @@
 package com.biomech.feature.training
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.biomech.core.resource.AppResources
 import com.biomech.domain.model.Device
 import com.biomech.domain.model.EMGSession
 import com.biomech.domain.model.TrainingFile
 import com.biomech.domain.model.TrainingJob
+import com.biomech.domain.model.TrainingStatus
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -189,18 +197,7 @@ private fun SessionsTab(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(jobs) { job ->
-                    Card(modifier = Modifier.fillMaxWidth()) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text(
-                                text = AppResources.strings.jobId(job.id),
-                                style = MaterialTheme.typography.titleSmall
-                            )
-                            Text(AppResources.strings.status(job.status.name))
-                            if (job.accuracy > 0) {
-                                Text(AppResources.strings.jobAccuracy((job.accuracy * 100).toInt()))
-                            }
-                        }
-                    }
+                    JobCard(job = job)
                 }
             }
         }
@@ -332,14 +329,86 @@ private fun FilesTab(
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )
+                                    IconButton(onClick = { onDeleteFile(file.id) }) {
+                                        Text("\uD83D\uDDD1\uFE0F")
+                                    }
                                 }
-                            }
-                            IconButton(onClick = { onDeleteFile(file.id) }) {
-                                Text("\uD83D\uDDD1\uFE0F")
                             }
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun JobCard(job: TrainingJob) {
+    val chipColor = when (job.status) {
+        TrainingStatus.COMPLETED -> Color(0xFF4CAF50)
+        TrainingStatus.RUNNING -> Color(0xFF2196F3)
+        TrainingStatus.FAILED -> Color(0xFFF44336)
+        TrainingStatus.PENDING -> Color(0xFF9E9E9E)
+    }
+    val chipLabel = when (job.status) {
+        TrainingStatus.COMPLETED -> "Completed"
+        TrainingStatus.RUNNING -> "Running..."
+        TrainingStatus.FAILED -> "Failed"
+        TrainingStatus.PENDING -> "Pending"
+    }
+
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = "Job ${job.id.take(8)}",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                )
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(chipColor.copy(alpha = 0.15f))
+                        .padding(horizontal = 10.dp, vertical = 4.dp),
+                ) {
+                    Text(
+                        text = chipLabel,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = chipColor,
+                    )
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+            if (job.status == TrainingStatus.RUNNING) {
+                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                Spacer(Modifier.height(4.dp))
+            }
+            if (job.status == TrainingStatus.COMPLETED && job.accuracy > 0) {
+                Text(
+                    text = "Accuracy: ${(job.accuracy * 100).toInt()}%",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            if (job.status == TrainingStatus.FAILED && job.errorMessage.isNotBlank()) {
+                Text(
+                    text = job.errorMessage,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
+            if (job.createdAt.isNotBlank()) {
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = "Created: ${job.createdAt.take(16).replace("T", " ")}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         }
     }

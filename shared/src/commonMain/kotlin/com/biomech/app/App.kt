@@ -171,6 +171,10 @@ fun App() {
                         val viewModel: DashboardViewModel = koinInject()
                         val state by viewModel.state.collectAsState()
 
+                        DisposableEffect(Unit) {
+                            onDispose { viewModel.onCleared() }
+                        }
+
                         LaunchedEffect(Unit) {
                             val deviceId = (navigator.currentScreen as? Screen.Dashboard)?.deviceId
                             if (!deviceId.isNullOrBlank()) {
@@ -200,6 +204,10 @@ fun App() {
                             viewModel.dispatch(TrainingAction.UploadFile(
                                 state.selectedDeviceId ?: "", state.uploadLabel, bytes, fileName
                             ))
+                        }
+
+                        DisposableEffect(Unit) {
+                            onDispose { viewModel.onCleared() }
                         }
 
                         TrainingScreen(

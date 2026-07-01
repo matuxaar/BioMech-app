@@ -19,7 +19,7 @@ actual fun rememberFilePickerLauncher(onResult: (ByteArray, String) -> Unit): ()
             val bytes = inputStream?.readBytes() ?: return@rememberLauncherForActivityResult
             inputStream.close()
 
-            var fileName = "recording.csv"
+            var fileName = "file"
             try {
                 val cursor = context.contentResolver.query(uri, null, null, null, null)
                 cursor?.use {
@@ -30,10 +30,10 @@ actual fun rememberFilePickerLauncher(onResult: (ByteArray, String) -> Unit): ()
                         }
                     }
                 }
-            } catch (_: Exception) { }
+            } catch (_: Exception) {}
 
             onResult(bytes, fileName)
-        } catch (_: Exception) { }
+        } catch (_: Exception) {}
     }
-    return { launcher.launch("text/csv") }
+    return { launcher.launch("*/*") }
 }

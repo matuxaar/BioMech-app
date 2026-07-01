@@ -58,6 +58,7 @@ class DashboardViewModel(
     private var currentSessionId: String? = null
     private val sampleBuffer = mutableListOf<EMGSample>()
     private var sampleBatchJob: Job? = null
+    private var predictionCollectJob: Job? = null
 
     init {
         scope.launch {
@@ -91,7 +92,7 @@ class DashboardViewModel(
                 _state.value = _state.value.copy(notificationValues = values)
             }
         }
-        scope.launch {
+        predictionCollectJob = scope.launch {
             predictClient.predictions.collect { prediction ->
                 _state.value = _state.value.copy(predictionLabel = prediction)
             }
@@ -203,6 +204,17 @@ class DashboardViewModel(
             }
             is AppResult.Error -> { }
         }
+    }
+
+    override fun onCleared() {
+        predictionCollectJob?.cancel()
+        predictionCollectJob = null
+        streamJob?.cancel()
+        streamJob = null
+        sampleBatchJob?.cancel()
+        sampleBatchJob = null
+        predictClient.disconnect()
+        super.onCleared()
     }
 
     private suspend fun connectBle(device: Device) {

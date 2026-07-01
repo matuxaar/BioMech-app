@@ -5,6 +5,9 @@ data class TrainingJob(
     val sessionIds: List<String>,
     val status: TrainingStatus,
     val accuracy: Double,
+    val createdAt: String = "",
+    val updatedAt: String = "",
+    val errorMessage: String = "",
 )
 
 enum class TrainingStatus {
