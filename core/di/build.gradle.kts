@@ -19,6 +19,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(project(":core:common"))
+            implementation(project(":core:connectivity"))
             implementation(project(":core:mvi"))
             implementation(project(":core:network"))
             implementation(project(":core:ble"))
@@ -46,6 +47,7 @@ kotlin {
         androidMain.dependencies {
             implementation("io.insert-koin:koin-android:4.2.1")
             implementation(project(":core:database"))
+            implementation(project(":core:buildconfig"))
         }
     }
 }
