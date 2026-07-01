@@ -213,7 +213,7 @@ class DashboardViewModel(
         streamJob = null
         sampleBatchJob?.cancel()
         sampleBatchJob = null
-        predictClient.disconnect()
+        scope.launch { predictClient.disconnect() }
         super.onCleared()
     }
 
