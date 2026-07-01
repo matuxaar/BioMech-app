@@ -22,4 +22,7 @@ interface DeviceDao {
 
     @Query("DELETE FROM cached_devices")
     suspend fun clearAll()
+
+    @Query("DELETE FROM cached_devices WHERE id = :id")
+    suspend fun deleteById(id: String)
 }

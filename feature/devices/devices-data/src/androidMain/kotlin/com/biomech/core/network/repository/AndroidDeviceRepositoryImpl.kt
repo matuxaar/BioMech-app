@@ -31,6 +31,10 @@ class AndroidDeviceRepositoryImpl(
     override suspend fun afterDeviceCreated(device: Device) {
         deviceDao.insert(device.toCached())
     }
+
+    override suspend fun afterDeviceDeleted(id: String) {
+        deviceDao.deleteById(id)
+    }
 }
 
 private fun Device.toCached() = CachedDevice(

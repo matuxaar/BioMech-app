@@ -89,7 +89,7 @@ open class DeviceRepositoryImpl(
     }
 
     override suspend fun deleteDevice(id: String): AppResult<Unit> {
-        return try {
+        val result = try {
             deviceApi.deleteDevice(id)
             AppResult.Success(Unit)
         } catch (e: Exception) {
@@ -101,6 +101,10 @@ open class DeviceRepositoryImpl(
                 AppResult.Error(msg)
             }
         }
+        if (result is AppResult.Success) {
+            afterDeviceDeleted(id)
+        }
+        return result
     }
 
     override suspend fun getDeviceActions(deviceId: String): AppResult<List<DeviceAction>> {
@@ -115,6 +119,7 @@ open class DeviceRepositoryImpl(
     protected open suspend fun afterDevicesFetched(devices: List<Device>) {}
     protected open suspend fun getCachedDevices(): AppResult<List<Device>>? = null
     protected open suspend fun afterDeviceCreated(device: Device) {}
+    protected open suspend fun afterDeviceDeleted(id: String) {}
 }
 
 internal fun DeviceDto.toDomain() = Device(
